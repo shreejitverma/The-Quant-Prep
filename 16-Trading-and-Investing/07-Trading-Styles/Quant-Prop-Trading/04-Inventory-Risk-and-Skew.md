@@ -14,7 +14,7 @@ prereqs: []
 A market maker cannot operate as a purely passive statistical machine that captures spreads without absorbing inventory.
 Whenever liquidity demand is one-sided, a market maker accumulates a non-zero inventory position.
 Holding inventory exposes the desk to uncompensated directional price volatility.
-The foundational framework for solving this multi-objective problem - balancing spread capture against inventory risk - was established by Ho and Stoll (1981) and formulated in closed form by Avellaneda and Stoikov (2008).
+The foundational framework for solving this multi-objective problem - balancing spread capture against inventory risk - was established by Ho and Stoll (1981) and given an approximate closed-form solution for a limit order book by Avellaneda and Stoikov (2008).
 
 ---
 
@@ -56,7 +56,9 @@ Where $\gamma > 0$ is the absolute risk aversion parameter.
 
 ### 2. The Avellaneda-Stoikov Closed-Form Solution (2008)
 
-The reservation price $r(s, q, t)$ is the subjective price at which the market maker is completely indifferent between holding inventory $q$ and holding $q - 1$ shares:
+With no further trading, the price at which the market maker is indifferent to selling one more unit (reservation ask) and to buying one more unit (reservation bid) are
+$$r^a = s + (1 - 2q)\frac{\gamma \sigma^2 (T - t)}{2}, \qquad r^b = s - (1 + 2q)\frac{\gamma \sigma^2 (T - t)}{2}$$
+and the reservation (indifference) price is their average:
 
 $$r(s, q, t) = s - q \gamma \sigma^2 (T - t)$$
 
@@ -64,7 +66,7 @@ Where:
 - $s$ is the prevailing asset mid-price.
 - $q$ is the current inventory in shares or contracts.
 - $\gamma$ is the desk's risk aversion coefficient.
-- $\sigma^2$ is the annualized or session variance of the asset's price returns.
+- $\sigma^2$ is the variance per unit time of the mid-price changes (price units squared, because $dS_t = \sigma \, dW_t$ is arithmetic), measured in the same time unit as $T - t$.
 - $(T - t)$ is the remaining time until the mandatory inventory liquidation horizon.
 
 #### Optimal Quoting Spreads
@@ -73,7 +75,7 @@ Order execution probabilities follow an exponential intensity model governed by 
 $$\lambda^a(\delta^a) = A \exp(-\kappa \delta^a), \quad \lambda^b(\delta^b) = A \exp(-\kappa \delta^b)$$
 
 Where $\delta^a = P_a - s$ is the ask spread from mid, and $\delta^b = s - P_b$ is the bid spread from mid.
-Avellaneda and Stoikov proved that the optimal total quoted spread $s^*(q, t) = \delta^a + \delta^b$ decomposes into:
+Using an approximation of the value function for small inventory, Avellaneda and Stoikov derived the optimal total quoted spread $s^*(q, t) = \delta^a + \delta^b$:
 
 $$s^*(q, t) = \gamma \sigma^2 (T - t) + \frac{2}{\gamma} \ln\left(1 + \frac{\gamma}{\kappa}\right)$$
 
@@ -98,7 +100,7 @@ The operational mechanics of Avellaneda-Stoikov quote shading behave as follows:
   The reservation price shifts downward ($r < s$).
   Both quotes drop:
   - $P_b$ moves further away from mid, drastically reducing the probability of receiving another buy fill.
-  - $P_a$ moves closer to mid (or inside mid), making the desk's ask the most competitive quote in the market and accelerating an inventory-reducing sale.
+  - $P_a$ moves closer to mid, raising the probability of an inventory-reducing sale.
 - **Short Inventory ($q < 0$)**:
   The reservation price shifts upward ($r > s$).
   Both quotes rise:
@@ -112,12 +114,15 @@ The expected change in inventory follows an Ornstein-Uhlenbeck drift:
 
 $$\mathbb{E}[dq_t \mid q_t] = -\kappa_{\text{inv}} q_t \, dt$$
 
-Where $\kappa_{\text{inv}} \approx A \kappa \exp(-\kappa s^* / 2) \cdot \gamma \sigma^2 (T - t)$ represents the inventory mean-reversion speed.
+Where $\kappa_{\text{inv}}$ is the inventory mean-reversion speed.
+With unit fills, the ask filled at rate $A e^{-\kappa \delta^a}$ and the bid at $A e^{-\kappa \delta^b}$, and the quotes shifted by $c\,q$ with $c = \gamma \sigma^2 (T - t)$, the expected drift is
+$$\mathbb{E}[dq_t \mid q_t] = A e^{-\kappa s^*/2}\left(e^{-\kappa c q} - e^{\kappa c q}\right) dt = -2 A e^{-\kappa s^*/2} \sinh(\kappa c q)\, dt$$
+so for small inventory $\kappa_{\text{inv}} \approx 2 A \kappa\, e^{-\kappa s^*/2}\, \gamma \sigma^2 (T - t)$.
 The inventory half-life $t_{1/2}$ is the expected time required for the desk to unwind 50% of an accumulated inventory shock passively:
 
 $$t_{1/2} = \frac{\ln(2)}{\kappa_{\text{inv}}}$$
 
-If $t_{1/2}$ exceeds the desk's maximum holding tolerance (e.g. 5 minutes for an intraday HFT desk), passive quote shading is insufficient, and active proxy hedging must be initiated.
+If $t_{1/2}$ exceeds the desk's maximum holding tolerance (a desk-specific limit), passive quote shading is insufficient, and active proxy hedging must be initiated.
 
 ### 5. Cross-Asset Proxy Hedging
 
@@ -125,12 +130,13 @@ When inventory exceeds risk limits $q_{\text{max}}$, the desk executes an aggres
 
 $$N_H = -\beta \cdot q \cdot \left(\frac{S_t}{S_{H,t}}\right)$$
 
-Where $\beta = \frac{\text{Cov}(\Delta S, \Delta S_H)}{\text{Var}(\Delta S_H)}$ is the rolling statistical beta between the primary asset and the hedge instrument.
-Active proxy hedging completely neutralizes systemic market delta, converting directional inventory risk into residual basis risk:
+Where $\beta = \frac{\text{Cov}(r_S, r_H)}{\text{Var}(r_H)}$ is the rolling beta of the primary asset's returns on the hedge instrument's returns; the factor $S_t / S_{H,t}$ converts that return beta into units of the hedge.
+(If $\beta$ were estimated on price changes $\Delta S$ and $\Delta S_H$ instead, it would already be in hedge units and the price ratio must be dropped.)
+With the minimum-variance $\beta$, proxy hedging removes the part of the inventory's variance explained by the hedge, leaving residual basis risk:
 
 $$\sigma_{\text{residual}}^2 = \sigma_S^2 (1 - \rho^2)$$
 
-Where $\rho$ is the correlation between the asset and the proxy.
+Where $\rho$ is the correlation between the asset's and the proxy's returns.
 If $\rho = 0.95$, residual variance falls to $1 - 0.95^2 = 9.75\%$ of the unhedged variance, eliminating $90.25\%$ of directional variance.
 
 ---
@@ -139,7 +145,7 @@ If $\rho = 0.95$, residual variance falls to $1 - 0.95^2 = 9.75\%$ of the unhedg
 
 ### Example 1: Avellaneda-Stoikov Quoting with Long vs Short Inventory
 
-A market maker operates on a stock with:
+A market maker operates on a stock with (hypothetical inputs):
 - Current Mid-price: $S_t = \$100.00$.
 - Risk aversion: $\gamma = 0.1$.
 - Volatility: $\sigma = \$0.50$ per day ($0.50^2 = 0.25$).
@@ -176,10 +182,10 @@ A market maker operates on a stock with:
 
 ### Example 2: Proxy Hedging Residual Delta
 
-A market maker is long 50,000 shares of a tech stock priced at $S_1 = \$200.00$ ($GMV = \$10,000,000$).
+A market maker is long 50,000 shares of a tech stock priced at $S_1 = \$200.00$ ($GMV = \$10,000,000$); all inputs except the contract multiplier are hypothetical.
 The desk risk manager limits unhedged exposure to $\$2,000,000$.
-The desk uses the E-mini Nasdaq 100 futures contract ($NQ$) priced at $\$18,000$ (multiplier $\$20$, contract value $\$360,000$) with estimated stock beta $\beta = 1.35$.
-Correlation $\rho = 0.90$.
+The desk uses the CME E-mini Nasdaq-100 futures contract ($NQ$, multiplier $\$20$ times the index) at an index level of $18,000$ (contract value $\$360,000$), with estimated return beta $\beta = 1.35$.
+Correlation $\rho = 0.90$, which with $\beta = 1.35$ implies the stock's volatility is $\beta / \rho = 1.5$ times the index's.
 
 1. **Calculate the Position to be Hedged**:
    $$\text{Excess Value} = \$10,000,000 - \$2,000,000 = \$8,000,000$$
@@ -187,7 +193,9 @@ Correlation $\rho = 0.90$.
    $$N_{NQ} = -\frac{\beta \times \text{Excess Value}}{\text{Contract Value}} = -\frac{1.35 \times \$8,000,000}{\$360,000} = -\frac{\$10,800,000}{\$360,000} = -30.0\text{ contracts}$$
 3. **Desk Action**:
    The desk sells 30 NQ futures contracts short.
-   The directional delta is neutralized, reducing portfolio variance by $1 - 0.90^2 = 81\%$.
+   The beta-weighted delta of the $\$8,000,000$ hedged slice is neutralized, and that slice's variance falls by $\rho^2 = 0.90^2 = 81\%$.
+   The remaining $\$2,000,000$ is unhedged by design, so the variance of the whole $\$10,000,000$ position falls by less, $77.76\%$:
+   in units of the index variance, the unhedged variance is $10^2 \times 1.5^2 = 225$ and the hedged variance is $225 - 2 \times 10 \times 10.8 \times 1.35 + 10.8^2 = 50.04$ (with positions in millions of dollars and the hedge at $1.35 \times 8 = 10.8$), and $1 - 50.04 / 225 = 77.76\%$.
 
 ---
 
@@ -195,12 +203,12 @@ Correlation $\rho = 0.90$.
 
 - **Setting Risk Aversion $\gamma$ Too Low**:
   If $\gamma$ is under-calibrated, the reservation price barely moves as inventory accumulates.
-  In a strong trending market, the desk will continuously buy all the way down, suffering devastating drawdowns (inventory runaway).
+  In a strong trending market, the desk can keep buying as the price falls and accumulate a large losing position (inventory runaway).
 - **Quote Crossing Under Extreme Inventory**:
-  If $\gamma$ or inventory $q$ is extremely large, the calculated bid $P_b^*$ can exceed the market best offer, resulting in an immediate unintentional crossed order.
-  Production quoting engines must enforce hard boundary clamps: $P_b^* \le P_a^{\text{NBBO}} - \text{tick}$.
+  Because $r = s - q\gamma\sigma^2(T-t)$, a large short inventory ($q \ll 0$) with a large $\gamma$ can push the calculated bid $P_b^*$ above the market best offer, resulting in an immediate unintentional crossed order; a large long inventory can likewise push the ask $P_a^*$ below the best bid.
+  Production quoting engines enforce clamps on both sides: $P_b^* \le P_a^{\text{NBBO}} - \text{tick}$ and $P_a^* \ge P_b^{\text{NBBO}} + \text{tick}$.
 - **Assuming Static Volatility**:
-  Volatility $\sigma$ typically spikes precisely when inventory accumulates during a one-sided market selloff.
+  Volatility $\sigma$ often rises when inventory accumulates during a one-sided market selloff.
   Failing to scale $\sigma^2$ dynamically in real time leaves the reservation price under-penalized during panics.
 - **Basis Breakdown in Proxy Hedging**:
   Hedging single-stock inventory with broad index futures leaves the desk exposed to idiosyncratic earnings gap risk and borrow recall costs.
@@ -211,7 +219,7 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-097 | What is the Avellaneda-Stoikov (2008) reservation price equation?
 > r(s, q, t) = s - q * gamma * sigma^2 * (T - t).
-> It represents the indifference price at which a market maker is neutral to adding or subtracting a unit of inventory.
+> It is the average of the reservation bid (indifference to buying one more unit) and the reservation ask (indifference to selling one more unit) for a market maker with CARA utility and no further trading.
 
 > [!question]- mkt-pqt-098 | What happens to the reservation price when a market maker accumulates a long inventory position?
 > The reservation price falls strictly below the prevailing market mid-price: r < s.
@@ -223,7 +231,8 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-100 | What role does the parameter gamma play in the Avellaneda-Stoikov framework?
 > Gamma represents the market maker's constant absolute risk aversion (CARA) parameter.
-> Higher gamma increases the inventory penalty, forcing faster quote skewing and wider defensive spreads.
+> Higher gamma raises the inventory term gamma * sigma^2 * (T - t) and the reservation-price skew per unit of inventory, but shrinks the liquidity term (2 / gamma) * ln(1 + gamma / kappa), so the total spread need not widen.
+> With Example 1's sigma^2 = 0.25, T - t = 1 and kappa = 1.5 the spread narrows from 1.3241 at gamma = 0.05 to 1.2717 at gamma = 1.0.
 
 > [!question]- mkt-pqt-101 | What role does kappa play in the Avellaneda-Stoikov model?
 > Kappa measures the price sensitivity of order arrivals: lambda(delta) = A * exp(-kappa * delta).
@@ -231,7 +240,7 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-102 | What is the terminal horizon T in intraday market making models?
 > T represents the end of the trading session or mandatory inventory liquidation time.
-> As t approaches T, (T - t) approaches zero, causing the inventory penalty to vanish as the desk faces hard liquidation.
+> As t approaches T, (T - t) approaches zero and the inventory penalty vanishes, because little price risk remains before the inventory is liquidated at S_T.
 
 > [!question]- mkt-pqt-103 | What is inventory half-life and why is it monitored by risk managers?
 > Inventory half-life is the expected time required for an accumulated inventory position to decay by 50% through passive quoting.
@@ -251,11 +260,11 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-107 | What is basis risk in a proxy-hedged market-making book?
 > The risk that the spread between the primary asset and the proxy hedge widens due to idiosyncratic shocks.
-> While market risk is eliminated, residual basis variance remains: Var(residual) = sigma_primary^2 * (1 - rho^2).
+> The hedge removes only the variance explained by the proxy; residual basis variance remains: Var(residual) = sigma_primary^2 * (1 - rho^2).
 
 > [!question]- mkt-pqt-108 | Why does correlation breakdown during market crashes impair proxy hedging?
-> During liquidity crises, idiosyncratic liquidations cause historical correlations rho to decouple toward zero or flip sign.
-> The market maker's long inventory drops while the short hedge rises, compounding losses across both legs.
+> During liquidity crises, idiosyncratic liquidations can push historical correlations rho toward zero or flip their sign.
+> If the long inventory then drops while the short hedge rises, both legs lose money.
 
 > [!question]- mkt-pqt-109 | What is inventory runaway and what causes it?
 > The continuous accumulation of inventory in one direction as an asset trends persistently through quoted price levels.
@@ -263,7 +272,7 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-110 | How do hard inventory boundaries (position limits) modify the Avellaneda-Stoikov problem?
 > When inventory reaches the maximum limit +Q_max, the market maker completely withdraws its bid quote (setting P_b = -infinity).
-> The desk only quotes an ask, eliminating the risk of accumulating further inventory.
+> The desk only quotes an ask, so passive fills can no longer add to the long position.
 
 > [!question]- mkt-pqt-111 | Explain the concept of asymmetric spread quoting.
 > Setting the bid distance delta_b and ask distance delta_a unequally relative to mid: delta_b != delta_a.
@@ -271,7 +280,7 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-112 | What is an internalizer's inventory netting benefit across multiple market makers?
 > An internalizer matching flow across multiple internal prop desks nets offsetting inventories before routing residual risk to the street.
-> Netting dramatically reduces external exchange execution fees and gross collateral requirements.
+> Netting reduces external exchange execution fees and gross collateral requirements.
 
 > [!question]- mkt-pqt-113 | Why does the Avellaneda-Stoikov spread widen when volatility sigma increases?
 > Spread s* contains the term gamma * sigma^2 * (T - t).
@@ -286,16 +295,16 @@ Correlation $\rho = 0.90$.
 > Financing drag creates a daily hurdle rate that penalizes slow-moving or low-turnover inventory.
 
 > [!question]- mkt-pqt-116 | What is the difference between active inventory shedding and passive quote shading?
-> Passive shading adjusts limit quotes to entice incoming retail orders to trade at favorable prices over time.
-> Active shedding aggressively crosses the spread with market orders, paying taker fees to eliminate risk instantly.
+> Passive shading adjusts limit quotes to attract incoming orders on the side that reduces inventory, at favorable prices but with uncertain timing.
+> Active shedding crosses the spread with market orders, paying the spread and taker fees to cut risk immediately.
 
 > [!question]- mkt-pqt-117 | When should a market maker transition from passive shading to active aggressive liquidation?
 > When inventory breaches critical stop limits, when inventory half-life exceeds time to close, or when market volatility spikes abruptly.
-> Active liquidation pays guaranteed spread costs to prevent catastrophic ruin from overnight gap risk.
+> Active liquidation pays a known spread cost now instead of carrying the position through overnight gap risk.
 
 > [!question]- mkt-pqt-118 | What is the impact of dividend ex-dates on equity market maker inventory?
-> Holding short equity inventory overnight on an ex-dividend date obligates the desk to pay the cash dividend to the share lender.
-> Market makers aggressively bid to close short inventory before the ex-date to avoid dividend liability.
+> A desk short over the ex-dividend date owes the share lender a manufactured payment equal to the dividend; a desk long over it receives the dividend.
+> The share price typically falls by about the dividend on the ex-date, so the payment is largely offset in mark-to-market terms; the real risks are a misestimated or special dividend, different tax treatment of manufactured payments, and borrow recalls around the record date.
 
 > [!question]- mkt-pqt-119 | In options market making, how does delta inventory relate to underlying stock quoting?
 > An options desk with net positive delta inventory shades its underlying stock quotes lower to sell stock and restore delta neutrality.
@@ -303,15 +312,15 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-120 | What is gamma scalping in the context of options inventory management?
 > Dynamically buying underlying stock when it falls and selling when it rises to maintain delta neutrality on a long gamma options position.
-> Realized gamma scalping gains offset the continuous theta time decay of the options inventory.
+> Gamma scalping gains offset the theta decay of the options only if realized volatility exceeds the implied volatility paid for them.
 
 > [!question]- mkt-pqt-121 | Why is inventory risk non-linear in total position size?
-> The variance of inventory holding cost scales with q^2: Cost ~ 0.5 * gamma * q^2 * sigma^2.
-> Doubling inventory quadruples the total dollar risk penalty, requiring exponentially aggressive quote shading.
+> The variance of the inventory's value scales with q^2, so the risk penalty is quadratic: Cost ~ 0.5 * gamma * q^2 * sigma^2 * (T - t).
+> Doubling inventory quadruples the penalty, while the marginal penalty of one more unit, and hence the reservation-price shift q * gamma * sigma^2 * (T - t), is linear in q.
 
 > [!question]- mkt-pqt-122 | What is the effect of order arrival intensity A on quoting spreads?
-> Higher baseline arrival intensity A means more frequent trades, allowing the market maker to quote tighter spreads.
-> Frequent trading increases turnover, enabling rapid inventory turnover and lower required margin per trade.
+> In the Avellaneda-Stoikov approximation it has none: s* = gamma * sigma^2 * (T - t) + (2 / gamma) * ln(1 + gamma / kappa) does not contain A.
+> In the Gueant-Lehalle-Fernandez-Tapia asymptotic quotes, the inventory-dependent term shrinks as A rises, because faster fills unwind inventory sooner, so less skew is needed per unit of inventory.
 
 > [!question]- mkt-pqt-123 | How does tick size discretisation constrain the theoretical Avellaneda-Stoikov quotes?
 > Theoretical continuous quotes P_a* and P_b* must be rounded to discrete exchange tick grids (e.g. $0.01 increments).
@@ -319,25 +328,30 @@ Correlation $\rho = 0.90$.
 
 > [!question]- mkt-pqt-124 | What is queue priority jumping via quote improvement?
 > Bidding one tick above the existing NBBO bid to establish a new price priority tier and jump ahead of a long queue.
-> The market maker sacrifices one tick of spread to guarantee immediate execution on incoming seller flow.
+> The market maker gives up one tick of spread for first place in the new price level, which raises the chance of filling against the next incoming seller but does not guarantee it.
 
 > [!question]- mkt-pqt-125 | How does high book depth at the NBBO influence optimal reservation price skew?
 > In deep books, incoming orders rarely sweep past the best quote, making it harder to attract rebalancing flow by shading.
 > The market maker must either join the front of the queue early or shade quotes across multiple ticks into Level 2 depth.
 
 > [!question]- mkt-pqt-126 | What is liquidity black hole risk in inventory management?
-> A catastrophic feedback loop where falling prices force multiple market makers to shed long inventory simultaneously.
-> Mutual aggressive selling exhausts all available bids, causing prices to collapse vertically without liquidity.
+> A feedback loop where falling prices push several market makers to shed long inventory at the same time.
+> Their combined selling can exhaust the available bids and make the price gap down until new buyers arrive.
 
 > [!question]- mkt-pqt-127 | Explain the difference between portfolio-level VAR and asset-level inventory limits.
 > Asset-level limits cap the maximum position in each individual stock to protect against idiosyncratic firm-specific news.
 > Portfolio VAR caps aggregate systematic exposure across all assets, accounting for cross-asset correlations.
 
-> [!question]- mkt-pqt-128 | Why do quantitative prop firms mandate that traders flatten all intraday inventory before market close?
-> Overnight trading pauses eliminate liquidity and prevent dynamic hedging while exposing capital to unhedgeable earnings gaps and macro shocks.
-> Complete flattening resets inventory to zero, ensuring that daily PnL reflects pure intraday statistical edge.
+> [!question]- mkt-pqt-128 | Why do many intraday market-making desks flatten inventory before the close?
+> The overnight session is thin or closed, so the desk cannot rebalance or hedge dynamically while earnings releases and macro news can gap the price at the open.
+> Complete flattening resets inventory to zero, so daily PnL carries no overnight inventory risk.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_pqt_04_inventory_skew.py`](../../code/mkt_pqt_04_inventory_skew.py) prints and asserts every number on this page: the Avellaneda-Stoikov quotes from the reservation bid and ask (whose average must equal the reservation price), the inventory drift and its small-inventory linearization against a seeded Poisson-fill simulation, the residual-variance fractions and the Example 2 hedge both in closed form and by a seeded bivariate-normal simulation within five standard errors.
+- Related notes: [Desk Roles and Economics](01-Desk-Roles-and-Economics.md), [Order Flow and Adverse Selection](03-Order-Flow-and-Adverse-Selection.md).
 
 ## Further reading
 

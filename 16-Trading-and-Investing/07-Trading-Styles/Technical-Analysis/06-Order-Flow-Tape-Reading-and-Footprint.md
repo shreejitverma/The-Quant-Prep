@@ -13,7 +13,7 @@ prereqs: []
 
 While classical technical analysis interprets processed OHLC bar charts after the close of an interval, order flow analysis inspects the raw, tick-level engine of price discovery: the continuous interaction between resting limit orders and aggressive market orders inside the Limit Order Book (LOB).
 Originating from the physical trading pits where floor specialists read the "tape" of executed trades, modern order flow tools - such as Time and Sales feeds, Bid-Ask Footprint charts, and Cumulative Volume Delta (CVD) - quantify buying and selling aggression in real time.
-This note formalizes trade classification algorithms, models institutional absorption and trapped trader mechanics, and synthesizes market microstructure literature governing order flow predictive power.
+This note formalizes trade classification, works through footprint and absorption arithmetic, and separates what the microstructure literature has established (order flow moves prices over very short horizons) from chart-reading patterns that have no published test.
 
 ---
 
@@ -24,7 +24,7 @@ The Lee-Ready (1991) trade classification algorithm attributes transactions as b
 Footprint charts disaggregate candlestick bars into a bid-ask matrix, displaying traded volume at every price tier within the bar.
 Cumulative Volume Delta (CVD) tracks the cumulative sum of aggressive market buying minus market selling:
 $$\text{CVD}_t = \sum_{i=1}^t (V_i^{\text{buy}} - V_i^{\text{sell}})$$
-When price rallies to a new high while CVD diverges downward, aggressive buying has exhausted, while passive institutional limit orders are absorbing supply, signaling an impending reversal.
+Tape readers interpret a new price high with falling CVD as buying exhaustion and passive absorption; no study cited here tests that pattern as a predictor, so treat it as a hypothesis.
 
 ---
 
@@ -34,7 +34,7 @@ When price rallies to a new high while CVD diverges downward, aggressive buying 
 - Deconstruct Bid-Ask Footprint charts: volume clusters, bar delta, delta finish, and trapped trader footprints.
 - Calculate and interpret Cumulative Volume Delta (CVD) and identify institutional absorption divergences.
 - Model the execution mechanics of iceberg orders, spoofing, and queue priority manipulation.
-- Analyze academic microstructure literature (Hasbrouck 1991, Cont, Kukanov and Stoikov 2014, O'Hara 2015) validating order flow predictive power.
+- Analyze what the microstructure literature (Hasbrouck 1991, Cont, Kukanov and Stoikov 2014, O'Hara 2015) does and does not show about order flow and prices.
 
 ---
 
@@ -46,9 +46,10 @@ The Limit Order Book organizes resting limit orders in price-time priority:
 - **Resting Limit Orders (Passive Liquidity)**: Traders place bids below the current price and asks above.
   They commit capital, face adverse selection risk, and earn or pay exchange maker fees/rebates.
 - **Market Orders (Aggressive Liquidity)**: Traders execute immediately at the best available quote, paying the bid-ask spread and taker fees.
-- **The Core Rule of Price Movement**:
-  Price does not move because of an imbalance in total buyers and sellers (every trade has exactly one buyer and one seller).
-  Price moves solely when aggressive market orders fully consume all resting limit order depth at the best bid or best ask, forcing the next trade to execute at a higher or lower tick level.
+- **How the best quotes move**:
+  Every trade has exactly one buyer and one seller, so "more buyers than sellers" is not the mechanism.
+  The best bid or ask moves when a queue is emptied (by market orders or by cancellations) or when a new limit order improves the price inside the spread.
+  Cont, Kukanov and Stoikov (2014) show that order flow imbalance, which nets limit orders, cancellations and market orders at the best quotes, explains short-interval price changes better than trade imbalance alone.
 
 ```
 +---------------------------------------------------------------------------------+
@@ -68,14 +69,14 @@ The Limit Order Book organizes resting limit orders in price-time priority:
 +---------------------------------------------------------------------------------+
 |  Incoming Order: Aggressive Market Buy for 150 contracts                        |
 |  Execution: Consumes all 90 @ 100.01 + 60 @ 100.02                              |
-|  Outcome: Best Ask moves to 100.02; Last Traded Price prints at 100.02 (+1 tick)|
+|  Outcome: Best Ask moves to 100.02 (120 left); last trade 100.02; avg 100.014   |
 +---------------------------------------------------------------------------------+
 ```
 
 ### 2. Trade Classification: The Lee-Ready (1991) Algorithm
 
 Tick-level market data feeds report trade price $P_t$, size $V_t$, and timestamp, but historically did not disclose whether the trade was buyer-initiated or seller-initiated.
-Charles Lee and Mark Ready (1991) formulated the standard algorithm to classify trade direction:
+Charles Lee and Mark Ready (1991) formulated the standard algorithm to classify trade direction; for the 1988 NYSE data they studied they also recommended comparing each trade with the quote in force at least five seconds earlier, because quotes were often recorded ahead of the trades that caused them:
 
 1. **The Quote Rule**:
    - Compare trade price $P_t$ to the prevailing National Best Bid and Offer (NBBO) midpoint $M_t = \frac{\text{Bid}_t + \text{Ask}_t}{2}$:
@@ -83,7 +84,9 @@ Charles Lee and Mark Ready (1991) formulated the standard algorithm to classify 
 
 2. **The Tick Rule (Fallback)**:
    - If the trade executes exactly at the midpoint ($P_t = M_t$):
-     $$\text{Direction}_t = \begin{cases} +1 & \text{if } P_t > P_{t-1}\text{ (Uptick)} \\ -1 & \text{if } P_t < P_{t-1}\text{ (Downtick)} \\ \text{Direction}_{t-1} & \text{if } P_t = P_{t-1}\text{ (Zero-Tick)} \end{cases}$$
+     $$\text{Direction}_t = \begin{cases} +1 & \text{if } P_t > P_{t-1}\text{ (Uptick)} \\ -1 & \text{if } P_t < P_{t-1}\text{ (Downtick)} \\ \text{sign}(P_t - P_{t-k}) & \text{if } P_t = P_{t-1}\text{ (Zero-Tick)} \end{cases}$$
+   - For a zero tick, $P_{t-k}$ is the most recent trade at a different price: a zero-uptick is a buy and a zero-downtick a sell.
+     This looks back at price changes, not at the previous trade's classification.
 
 ### 3. Footprint Charts and Volume Delta
 
@@ -99,7 +102,7 @@ Footprint charts (also known as Cluster Charts) open up the interior of a candle
 |  100.03 |      110  x      680  |   +570  |  <--- Bar POC (Highest Traded Size) |
 |  100.02 |      250  x      310  |    +60  |                                     |
 |  100.01 |      480  x       95  |   -385  |                                     |
-|  100.00 |      650  x       20  |   -630  |  <--- Trapped Sellers at the Low    |
+|  100.00 |      650  x       20  |   -630  |  <--- Heavy Selling at the Low      |
 +---------------------------------------------------------------------------------+
 |  Bar Summary: Total Volume = 3,312 | Bar Delta = +218 | Delta % = +6.58%        |
 +---------------------------------------------------------------------------------+
@@ -110,8 +113,9 @@ Footprint charts (also known as Cluster Charts) open up the interior of a candle
      $$\text{Bid Volume}(P - \text{tick}) \quad \times \quad \text{Ask Volume}(P)$$
 
 2. **Order Flow Imbalances**:
-   - An imbalance occurs when the volume on one side exceeds the opposing diagonal side by a user-defined ratio (conventionally $3:1$ or $4:1$, representing a $300\%$ to $400\%$ imbalance).
-   - Stacked buying imbalances (three or more consecutive price levels with buying imbalances) mark strong institutional initiative momentum.
+   - An imbalance occurs when the volume on one side is at least a user-chosen multiple (charting packages often default to 3 or 4 times) of the opposing diagonal volume.
+   - In the bar above, the 3:1 buying imbalances are at 100.05 ($140 / 45 = 3.11$) and 100.04 ($520 / 110 = 4.73$), but not at 100.03 ($680 / 250 = 2.72$); the 3:1 selling imbalance is at 100.00 ($650 / 95 = 6.84$).
+   - "Stacked" imbalances (three or more consecutive levels) are read by practitioners as initiative buying or selling; that reading has no published test, and this bar has only two consecutive buying levels.
 
 3. **Cumulative Volume Delta (CVD)**:
    - Evaluates the running net aggression across the session:
@@ -120,18 +124,18 @@ Footprint charts (also known as Cluster Charts) open up the interior of a candle
 
 ### 4. Institutional Absorption and Trapped Traders
 
-Absorption occurs when a passive institutional participant deploys massive limit order depth to absorb incoming market orders without allowing price to advance:
+Absorption is the tape-reading name for heavy aggressive volume that fails to move price because resting (often hidden) depth keeps refilling; the scenario below is hypothetical:
 
 1. **Passive Absorption at Resistance**:
    - A stock rallies to resistance at $\$150.00$.
    - Aggressive market buyers purchase $500,000$ shares at the ask ($\Delta \gg 0$).
    - Despite this enormous buying volume, price fails to tick higher because an institutional iceberg limit sell order absorbs every share.
    - The footprint prints massive ask volume and positive delta, but the price bar closes off its highs with an upper wick.
-   - When aggressive buyers exhaust their capital, the market collapses under its own weight.
+   - The tape-reading interpretation is that once aggressive buying stops, nothing is left to hold price up; that is a story, not a measured effect.
 
 2. **Trapped Traders**:
    - In the scenario above, aggressive buyers who bought at $\$150.00$ are now underwater as price drops to $\$149.20$.
-   - These "trapped buyers" are forced to sell their positions to stop out, adding aggressive market selling fuel that accelerates the downward move.
+   - If these "trapped buyers" stop out with market orders, their selling adds to the decline; whether it does depends on where their stops sit, which the tape does not reveal.
 
 ### 5. Empirical Evidence Ledger
 
@@ -139,32 +143,36 @@ Absorption occurs when a passive institutional participant deploys massive limit
 +---------------------------------------------------------------------------------+
 |                       EVIDENCE LEDGER: ORDER FLOW & MICROSTRUCTURE              |
 +---------------------------------------------------------------------------------+
-|  Phenomenon: Order Flow Imbalance, Trade Classification & Delta Predictive Power|
-|  Evidence Grade: STRONG (Intraday & Microstructure Horizons)                    |
+|  Phenomenon: Order flow, trade classification and short-horizon price impact    |
+|  Evidence: strong for contemporaneous and very short-horizon price impact;      |
+|  none cited here for footprint, CVD-divergence or trapped-trader setups.        |
 +---------------------------------------------------------------------------------+
 |  Key Empirical Studies:                                                         |
-|  1. Lee and Ready (1991, Journal of Finance):                                   |
-|     - Established empirical accuracy (> 85%) of tick and quote rules for        |
-|       classifying trade direction in continuous equity markets.                 |
+|  1. Lee and Ready (1991, Journal of Finance): quote rule, tick-rule fallback    |
+|     and the five-second quote lag. Odders-White (2000, Journal of Financial     |
+|     Markets) found it classified about 85% of NYSE (TORQ) trades correctly,     |
+|     with errors concentrated in small trades and midpoint trades.               |
 |  2. Hasbrouck (1991, Journal of Finance):                                       |
-|     - Vector Autoregression (VAR) showed order flow shock permanently impacts   |
-|       security prices, reflecting private information incorporation.            |
+|     - A vector autoregression of trades and quote revisions shows that trade    |
+|       innovations have a persistent price impact, read as private information.  |
 |  3. Cont, Stoikov, and Talreja (2010, Operations Research):                     |
-|     - Formulated continuous Poisson order book dynamics.                        |
+|     - A continuous-time queueing model with Poisson order arrivals.             |
 |     Cont, Kukanov, and Stoikov (2014, Journal of Financial Econometrics):       |
-|     - Showed order flow imbalance (OFI) has a linear relationship with          |
-|       short-term price changes in US equities.                                  |
-|  4. Cartea, Jaimungal, and Penalva (2015, Algorithmic and High-Frequency Trading):|
-|     - Validated that order book queue position and volume delta provide         |
-|       statistically significant short-term alpha for market makers.             |
+|     - Order flow imbalance at the best quotes has an approximately linear       |
+|       relation with contemporaneous short-interval price changes in US          |
+|       equities, with a slope inversely related to market depth.                 |
+|  4. Cartea, Jaimungal, and Penalva (2015, Algorithmic and High-Frequency        |
+|     Trading): a textbook treatment of market making and execution models        |
+|     that use order flow signals; it is not an empirical validation study.       |
 +---------------------------------------------------------------------------------+
 |  Counter-Evidence & Real-World Frictions:                                       |
 |  1. Dark Pools and Internalization:                                             |
-|     - Over 40% of US equity volume executes off-exchange in dark pools (ATS)    |
-|       and wholesaler internalizers, bypassing the public lit order book.        |
+|     - A large and time-varying share of US equity volume executes off-exchange  |
+|       (ATSs and wholesalers) and prints to a FINRA Trade Reporting Facility.    |
 |  2. Latency Arbitrage and Spoofing:                                             |
 |     - High-Frequency Trading (HFT) co-located algorithms cancel and replace     |
-|       resting orders in microseconds, rendering manual Level 2 depth deceptive. |
+|       resting orders faster than a human can react, so displayed depth is       |
+|       not a reliable promise of liquidity.                                      |
 +---------------------------------------------------------------------------------+
 ```
 
@@ -196,16 +204,16 @@ An equity execution algorithm processes four sequential transactions on an excha
 
 4. **Classify Trade 4**:
    $$P_4 = \$50.02 = M = \$50.02 \implies \text{Midpoint Trade, apply Tick Rule}$$
-   $$P_4 = P_3\text{ (Zero-Tick)} \implies \text{Inherits prior direction (+1)}$$
+   $$P_4 = P_3\text{ (Zero-Tick)}, \quad P_4 > \$50.00\text{ (last different price)} \implies \text{Zero-Uptick, Buyer-Initiated (+1)}$$
    $$\text{Delta Contribution} = +400\text{ shares}$$
 
 5. **Compute Total Net Bar Delta**:
    $$\Delta_{\text{net}} = +500 - 1200 + 300 + 400 = 0\text{ shares}$$
-   The net delta across the four trades is perfectly balanced at zero.
+   The net delta across the four trades is exactly zero.
 
-### Example 2: Diagnosing CVD Absorption Divergence
+### Example 2: Reading Absorption at a Prior High (hypothetical)
 
-A tape reader monitors a futures contract testing the previous day's high of $4,500.00$:
+A tape reader monitors a futures contract testing the previous day's high of $4,500.00$ (all prices and volumes are hypothetical):
 - **Wave 1 (Initial Test)**:
   - Price reaches $4,500.00$.
   - Cumulative Delta over Wave 1: $\text{CVD} = +5,000\text{ contracts}$.
@@ -216,33 +224,34 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
   - Despite $+12,000$ contracts of aggressive market buying, price advances by only $3.00$ points and closes back at $4,498.00$.
 
 1. **Evaluate Order Flow Dynamics**:
-   - Aggressive market buyers poured $+12,000$ contracts of buying volume into the highs.
-   - Price barely budged ($+3$ points) and closed below the breakout level.
-   - Passive institutional sellers absorbed the entire $+12,000$ contracts using limit sell orders.
+   - Aggressive market buyers added $17,000 - 5,000 = 12,000$ contracts of net buying.
+   - Price made a new high by only $4,503 - 4,500 = 3$ points and closed back below the breakout level.
+   - Every aggressive buy was, by definition, filled by a passive seller; what the reader infers is that resting sell depth kept refilling.
+   - Note that CVD made a higher high with price, so this is absorption (large delta per point gained), not the CVD divergence defined above.
 
 2. **Strategic Trade Plan**:
-   - **Diagnosis**: Bearish CVD Absorption (Exhaustion).
+   - **Diagnosis**: bearish absorption, an untested discretionary hypothesis.
    - Enter Short at $4,497.00$.
    - Stop Loss: $4,504.00$ (above the trapped buyer high, Risk $= 7.00$ points).
-   - Target: Rotation down to the Value Area POC at $4,475.00$ (Reward $= 22.00$ points).
-   - Risk-Reward Ratio: $R = \frac{22.00}{7.00} = 3.14\text{R}$.
+   - Target: Rotation down to a prior volume point of control at $4,475.00$ (Reward $= 22.00$ points).
+   - Reward-to-risk ratio: $\frac{22.00}{7.00} = 3.14$, so the trade needs a hit rate above $7 / 29 = 24.1\%$ to break even before costs.
 
 ---
 
 ## Pitfalls
 
 - **The Level 2 Phantom Liquidity Illusion (Spoofing)**:
-  Traders who rely on resting limit order depth on Level 2 screens are frequently deceived by spoofing algorithms.
-  Large resting bids can be cancelled in microseconds right before a trade executes, leaving the trader trapped without liquidity.
+  Displayed depth on Level 2 screens can be cancelled at any moment, and spoofing (orders entered with the intent to cancel before execution) is designed to mislead.
+  Large resting bids can disappear just before a trade executes, leaving the trader without the liquidity they saw.
 - **Ignoring Hidden Iceberg Orders**:
-  An institutional order for $100,000$ shares may display only $500$ shares on the order book at any given time.
+  A hypothetical institutional order for $100,000$ shares may display only $500$ shares on the order book at any given time.
   Looking only at displayed size fails to reveal the true magnitude of resting institutional absorption.
 - **Off-Exchange Dark Pool Blind Spots**:
   In US equities, institutional block trades execute in Alternative Trading Systems (ATS) and print to the Trade Reporting Facility (TRF) with delays.
   Order flow delta captured strictly on lit exchange feeds misses off-exchange block crosses.
 - **Latency Disadvantage Against Co-Located Algorithms**:
-  Retail order flow feeds transmit over public internet connections with $20$ to $100$ milliseconds of latency.
-  HFT firms execute in sub-microseconds directly inside exchange data centers, meaning front-running algorithms have already reacted before the retail screen updates.
+  Retail order flow feeds travel over the public internet and through vendor servers, while co-located firms receive direct exchange feeds inside the data centre.
+  By the time a retail screen updates, faster participants have already seen and reacted to the same events.
 
 ---
 
@@ -253,12 +262,12 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 > An aggressive market order takes liquidity, demanding immediate execution at the current best available price and driving price movement.
 
 > [!question]- mkt-ta-162 | Why does price move in continuous double auction markets?
-> Price moves when aggressive market orders fully consume all resting limit order depth at the best bid or ask level.
-> The subsequent market order must cross the spread to execute at the next available tick tier.
+> The best bid or ask moves when its queue is emptied, by market orders or by cancellations, or when a new limit order improves the price inside the spread.
+> Cont, Kukanov and Stoikov (2014) show that order flow imbalance at the best quotes, netting all three event types, explains short-interval price changes.
 
 > [!question]- mkt-ta-163 | State the Lee-Ready (1991) trade classification algorithm.
 > If trade price is above the NBBO midpoint, it is classified as buyer-initiated; if below, seller-initiated.
-> If executed at the midpoint, the tick rule applies: an uptick is buyer-initiated, a downtick is seller-initiated, and a zero-tick inherits the prior direction.
+> If executed at the midpoint, the tick rule applies: an uptick is buyer-initiated, a downtick is seller-initiated, and a zero tick takes the sign of the last price change (zero-uptick buy, zero-downtick sell).
 
 > [!question]- mkt-ta-164 | What is a Footprint (Cluster) chart?
 > A candlestick chart that displays the internal executed volume at each price tick within the bar.
@@ -269,8 +278,8 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 > This reflects the two-sided nature of market orders crossing the spread against opposing resting quotes.
 
 > [!question]- mkt-ta-166 | What is an order flow imbalance in footprint charting?
-> A condition where traded volume on one side exceeds the opposing diagonal volume by a predetermined ratio (typically 3:1 or 4:1).
-> It highlights aggressive initiative buying or selling at specific price tiers.
+> A condition where traded volume on one side is at least a user-chosen multiple (charting defaults are often 3 or 4) of the opposing diagonal volume.
+> It highlights where aggressive buying or selling concentrated inside the bar; it is a description, not a tested signal.
 
 > [!question]- mkt-ta-167 | What is Cumulative Volume Delta (CVD)?
 > The running cumulative sum of aggressive market buying volume minus aggressive market selling volume across a session: CVD_t = sum(V_buy - V_sell).
@@ -278,15 +287,15 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 
 > [!question]- mkt-ta-168 | What is a CVD absorption divergence?
 > When price makes a higher high but CVD fails to make a higher high (or vice versa).
-> It indicates that aggressive buying is waning while passive limit orders are absorbing incoming volume, signaling an impending trend exhaustion.
+> Tape readers read it as waning aggressive buying against passive absorption; no study cited here tests it as a reversal predictor.
 
 > [!question]- mkt-ta-169 | What is institutional absorption in order flow analysis?
 > When a large participant places large resting limit orders (often as an iceberg) that absorb aggressive market orders without allowing price to move through the level.
 > High volume prints at the level without price advancement.
 
 > [!question]- mkt-ta-170 | What are trapped buyers in market microstructure?
-> Aggressive market participants who bought at the extreme top of a move right into passive institutional limit sell orders.
-> When price reverses downward, their stop-loss selling accelerates the subsequent drop.
+> Aggressive buyers who bought at or near the top of a move, into resting limit sell orders whose owners the tape does not identify.
+> If they exit with stop-market orders, that selling can add to the drop; whether it does depends on where their stops sit, and no study cited here measures it.
 
 > [!question]- mkt-ta-171 | What is an iceberg order?
 > A large limit order that displays only a small fraction of its total quantity in the public order book (e.g. displaying 100 shares out of a 50,000 share order).
@@ -294,47 +303,47 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 
 > [!question]- mkt-ta-172 | What is spoofing in financial markets and is it legal?
 > The illegal practice of submitting large non-bona fide resting limit orders with the intention of canceling them before execution.
-> Designed to create a false impression of market depth to manipulate prices, spoofing was outlawed by the Dodd-Frank Act of 2010.
+> Dodd-Frank (2010) section 747 added Commodity Exchange Act section 4c(a)(5)(C), which makes spoofing (bidding or offering with the intent to cancel before execution) unlawful on CFTC-registered markets; in securities markets it is prosecuted as manipulation and fraud.
 
 > [!question]- mkt-ta-173 | What is layering in order book manipulation?
 > Submitting multiple fake limit orders at progressive price increments on one side of the book to simulate heavy supply or demand, while executing a real order on the opposite side.
 > Once filled, the layered orders are instantly cancelled.
 
 > [!question]- mkt-ta-174 | What did Hasbrouck (1991) demonstrate regarding order flow impact using Vector Autoregressions (VAR)?
-> That unexpected order flow shocks have a permanent price impact on asset prices.
-> The permanent impact represents the market's assessment of private information carried by aggressive orders.
+> That trade innovations have a persistent impact on quote midpoints in a VAR of trades and quote revisions, larger for smaller firms.
+> The persistent impact is interpreted as the private information carried by trades.
 
 > [!question]- mkt-ta-175 | What is Order Flow Imbalance (OFI) as defined by Cont, Kukanov, and Stoikov (2014)?
 > A quantitative metric measuring the net change in order book depth: changes in limit order arrivals, cancellations, and market order executions across the best bid and ask.
-> OFI exhibits a strong, linear contemporaneous relationship with price changes.
+> OFI has an approximately linear contemporaneous relationship with short-interval price changes, with a slope inversely related to market depth.
 
 > [!question]- mkt-ta-176 | What is Delta Finish (Delta at the extremes) in a footprint bar?
-> The volume delta recorded at the very highest tick (for a down bar) or lowest tick (for an up bar).
-> An extreme negative delta at a bar low that closes higher indicates trapped sellers and aggressive absorption.
+> A vendor-defined reading of the delta printed at a bar's extreme price ticks; definitions differ between charting packages.
+> Tape readers read a large negative delta at the low of a bar that closes higher as sellers absorbed by passive bids; that interpretation is untested.
 
 > [!question]- mkt-ta-177 | What is the Bar Point of Control (Bar POC)?
 > The specific price tick within an individual footprint bar where the highest total volume was transacted.
-> It serves as micro-support or resistance on subsequent intraday rotations.
+> Practitioners watch it as a reference price on later rotations; no published test of it as support or resistance is cited here.
 
 > [!question]- mkt-ta-178 | What is stacked imbalance in footprint analysis?
-> Three or more consecutive vertical price levels that all display aggressive buying or selling imbalances.
-> Stacked imbalances reflect sustained institutional momentum and define strong support/resistance zones on pullbacks.
+> Three or more consecutive price levels that all display buying (or all selling) diagonal imbalances.
+> Practitioners read them as initiative activity and later support or resistance; that reading has no published test.
 
 > [!question]- mkt-ta-179 | What is exhaustion volume in tape reading?
-> A massive, parabolic surge in aggressive market order volume occurring at the end of an extended trend.
-> It represents retail FOMO buying into institutional distribution, frequently marking the exact termination of the move.
+> A surge in aggressive volume after an extended move, read by tape readers as late buyers meeting large sellers.
+> It is identified only in hindsight; no study cited here shows that it marks the end of a move.
 
 > [!question]- mkt-ta-180 | What is market depth (Level 2) and what is its primary limitation for retail traders?
 > Level 2 displays the aggregate resting limit order quantity at each price tier across participating exchanges.
 > Its primary limitation is that it only shows visible liquidity, hiding dark pools, iceberg orders, and ephemeral HFT quotes.
 
 > [!question]- mkt-ta-181 | What is a sweep order (intermarket sweep order, ISO)?
-> An aggressive market order split across multiple exchanges that sweeps through all available limit orders across multiple price tiers simultaneously.
-> ISOs indicate urgent institutional demand that ignores execution price slippage.
+> A limit order marked as an ISO under Regulation NMS (Rule 600(b) definition); the sender simultaneously routes orders to take out better-priced protected quotes elsewhere, which exempts it from the Rule 611 order protection requirement.
+> ISOs let a trader take liquidity at several venues and price levels at once, so they often signal urgency.
 
 > [!question]- mkt-ta-182 | How does dark pool trading affect order flow signals on lit exchanges?
-> Up to 40% of equity volume executes off-exchange without pre-trade transparency.
-> Because dark trades print to the tape with delayed reporting, lit order flow delta provides an incomplete picture of institutional volume.
+> A large, time-varying share of US equity volume executes off-exchange (ATSs and wholesalers) without pre-trade transparency and prints to a FINRA Trade Reporting Facility.
+> Those prints carry no aggressor flag and are reported after execution, so lit-exchange order flow delta is an incomplete picture of total volume.
 
 > [!question]- mkt-ta-183 | What is queue priority in limit order book matching?
 > The order execution sequence governed by price-time priority: orders at the best price execute first, and among equal prices, the earliest submitted order fills first.
@@ -350,15 +359,15 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 
 > [!question]- mkt-ta-186 | What is the VPIN metric (Volume-Synchronized Probability of Toxicity)?
 > A market microstructure metric developed by Easley, López de Prado, and O'Hara (2012) that measures order toxicity based on volume imbalances in equal-volume buckets.
-> VPIN serves as an early warning indicator for flash crashes and liquidity evaporation.
+> The authors proposed it as an early-warning indicator of toxicity before the 6 May 2010 flash crash; Andersen and Bondarenko (2014) dispute its predictive power, so treat it as contested.
 
 > [!question]- mkt-ta-187 | How does tape reading detect an institutional iceberg order?
 > By observing continuous large volume transactions printing at the ask (or bid) on the Time and Sales feed while the displayed order size on Level 2 never decreases.
-> The constant replenishment of displayed size reveals a hidden iceberg order.
+> Constant replenishment of displayed size is consistent with a hidden iceberg order, though a series of new limit orders at the same price looks the same on public data.
 
 > [!question]- mkt-ta-188 | What is an unfinished business (unmatched auction) in footprint charts?
-> When a candle high has volume executed at both the bid and the ask, rather than zero volume on the bid (an untruncated auction).
-> It indicates that the auction was interrupted rather than exhausted, with a high statistical probability of price returning to test the level.
+> A footprint term for a bar extreme that traded on both the bid and the ask, rather than one side going to zero.
+> Practitioners say price tends to revisit such levels; no published probability for that claim is cited here, so treat it as untested.
 
 > [!question]- mkt-ta-189 | What is liquidity replenishment in order book dynamics?
 > The speed at which market makers post fresh limit orders after an aggressive trade sweeps a price tier.
@@ -369,12 +378,17 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 > Slippage increases non-linearly with order size relative to available top-of-book depth.
 
 > [!question]- mkt-ta-191 | What is market on close (MOC) imbalance and how does it relate to tape reading?
-> Regulatory disclosure published in the final minutes of trading showing net buy or sell shares required to execute at the official closing cross.
-> Massive MOC imbalances drive violent directional tape acceleration into the closing bell.
+> Exchange-published closing-auction data (for example the NYSE closing imbalance feed and the Nasdaq Net Order Imbalance Indicator) showing unmatched buy or sell interest for the closing cross.
+> Large imbalances invite offsetting orders into the close; their effect on price is an empirical question, not a rule.
 
 > [!question]- mkt-ta-192 | Why is order flow analysis more effective on centralized futures exchanges (CME) than fragmented equity markets?
-> Regulated futures contracts execute on a single centralized matching engine without dark pools or off-exchange internalizers.
-> Every tick, trade, and cancellation is visible to all participants on a unified order book.
+> Each futures contract trades on one exchange's central limit order book, so there is no fragmentation across venues or wholesalers.
+> The main exceptions are privately negotiated block trades (CME Rule 526) and EFRPs (CME Rule 538), which are reported after execution; market-by-order data show every order event in the book.
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_ta_06_order_flow.py`](../../code/mkt_ta_06_order_flow.py) prints and asserts every number on this page: the sweep by a price-time matching routine on the ask ladder, the footprint bar's totals, delta, delta percent, point of control and diagonal ratios in exact integer arithmetic from the bid x ask table, the Lee-Ready example with a tick rule that looks back to the last different price, and the absorption trade's risk and reward as exact fractions with its break-even hit rate by bisection on the expectancy.
+- Related notes: [Auction Theory, Volume Profile and VWAP](03-Auction-Theory-Volume-Profile-and-VWAP.md).
 
 ---
 
@@ -385,5 +399,7 @@ A tape reader monitors a futures contract testing the previous day's high of $4,
 - Cont, R., Stoikov, S., & Talreja, R. (2010). *A stochastic model for order book dynamics*. Operations Research, 58(3), 549-563.
 - Cont, R., Kukanov, A., & Stoikov, S. (2014). *The price impact of order book events*. Journal of Financial Econometrics, 12(1), 47-88.
 - Easley, D., López de Prado, M. M., & O'Hara, M. (2012). *Flow toxicity and liquidity in a high-frequency world*. The Review of Financial Studies, 25(5), 1457-1493.
+- Andersen, T. G., & Bondarenko, O. (2014). *VPIN and the flash crash*. Journal of Financial Markets, 17, 1-46.
+- Odders-White, E. R. (2000). *On the occurrence and consequences of inaccurate trade classification*. Journal of Financial Markets, 3(3), 259-286.
 - Cartea, Á., Jaimungal, S., & Penalva, J. (2015). *Algorithmic and High-Frequency Trading*. Cambridge University Press.
 - O'Hara, M. (2015). *High frequency market microstructure*. Journal of Financial Economics, 116(2), 257-270.

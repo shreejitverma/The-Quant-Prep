@@ -40,7 +40,7 @@ Roll's model demonstrates that effective spreads can be inferred directly from t
 
 ### 1. The Glosten-Milgrom (1985) Information Asymmetry Model
 
-Glosten and Milgrom formulated a discrete sequential trading framework where an asset has a true terminal value $V$ that is either high ($V_H$) or low ($V_L$) with prior probability:
+Glosten and Milgrom formulated a sequential trading framework; the standard textbook simplification below has an asset with a true terminal value $V$ that is either high ($V_H$) or low ($V_L$) with prior probability:
 
 $$\mathbb{P}(V = V_H) = p_0, \quad \mathbb{P}(V = V_L) = 1 - p_0$$
 
@@ -108,7 +108,8 @@ And the informed trader's optimal trading strategy is linear in their private in
 $$x(v) = \beta (v - p_0), \quad \text{where } \beta = \frac{\sigma_u}{\sqrt{\Sigma_0}}$$
 
 **Key Microstructure Insights from Kyle's Lambda**:
-- **Market Depth**: Defined as $1 / \lambda = 2 \sigma_u / \sqrt{\Sigma_0}$. Deep markets accommodate large orders with minimal price impact.
+- **Market Depth**: Defined as $1 / \lambda = 2 \sigma_u / \sqrt{\Sigma_0}$.
+  Deep markets accommodate large orders with minimal price impact.
 - **Informed Trading Intensity**: When private information uncertainty $\Sigma_0$ is high, $\lambda$ increases, causing steeper price impact.
 - **Noise Trader Protection**: Higher noise trading volume $\sigma_u$ dilutes informed flow, reducing $\lambda$ and narrowing price impact.
 
@@ -152,10 +153,11 @@ The Lee-Ready algorithm assigns trade direction via a two-step hierarchical rule
    - If trade price $P_t > S_t$ (mid-price of the prevailing NBBO), classify as a **Buy** ($+1$).
    - If trade price $P_t < S_t$, classify as a **Sell** ($-1$).
 2. **Tick Rule (Fallback when $P_t = S_t$)**:
-   - If the trade occurred at the mid-price, evaluate the sign of the price change relative to the previous different transaction price:
-   - If $P_t > P_{t-k}$, classify as a **Buy** ($+1$, an uptick).
-   - If $P_t < P_{t-k}$, classify as a **Sell** ($-1$, a downtick).
-   - If identical to the previous trade price, carry forward the previous classification.
+   - If the trade occurred at the mid-price, compare it with the most recent trade at a different price, $P_{t-k}$:
+   - If $P_t > P_{t-k}$, classify as a **Buy** ($+1$, an uptick or zero-uptick).
+   - If $P_t < P_{t-k}$, classify as a **Sell** ($-1$, a downtick or zero-downtick).
+
+Lee and Ready also recommended comparing each trade with the quote in effect five seconds earlier, because in their data quotes were often time-stamped ahead of the trades that caused them.
 
 ---
 
@@ -163,7 +165,7 @@ The Lee-Ready algorithm assigns trade direction via a two-step hierarchical rule
 
 ### Example 1: Glosten-Milgrom Spread Calculation
 
-Consider an asset with binary terminal value:
+Consider an asset with binary terminal value (hypothetical inputs):
 - Low state: $V_L = \$80.00$.
 - High state: $V_H = \$120.00$.
 - Symmetric prior: $p_0 = \mathbb{P}(V = V_H) = 0.50$.
@@ -191,7 +193,7 @@ Consider an asset with binary terminal value:
 
 ### Example 2: Estimating Roll Effective Spread from Return Series
 
-An analyst collects 5 consecutive transaction prices:
+An analyst collects 5 consecutive transaction prices (hypothetical):
 $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 
 1. **Calculate Price Differences $\Delta P_t$**:
@@ -223,7 +225,7 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 - **SIP Latency Warping in Lee-Ready Classification**:
   If trade records from direct exchange feeds are compared against delayed SIP quotes, a trade executed at the ask appears to have occurred above the stale ask, distorting trade sign accuracy.
 - **Assuming Informed Traders Trade Immediately**:
-  Kyle's model assumes informed traders trade patiently to minimize market impact; Glosten-Milgrom assumes immediate execution.
+  In Kyle's multi-period and continuous-time versions the insider spreads trades over time to limit impact; in Glosten-Milgrom each informed trader trades once, immediately.
   In reality, institutional algorithms slice orders into TWAP/VWAP child orders that mimic noise traders.
 - **Ignoring Inventory Shading**:
   If a market maker skews their quotes to reduce inventory, trades hitting their skewed quote do not represent informed flow, yet a simple adverse selection model will falsely classify them as toxic.
@@ -233,7 +235,7 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 ## Interview questions
 
 > [!question]- mkt-pqt-065 | What is the fundamental conclusion of the Glosten-Milgrom (1985) model?
-> The bid-ask spread is fundamentally an information asymmetry cost rather than an operational processing fee.
+> In the model the bid-ask spread is purely an information asymmetry cost, not an operational processing fee.
 > A positive spread exists in equilibrium even under zero transaction costs and perfect market maker competition to offset losses to informed traders.
 
 > [!question]- mkt-pqt-066 | How does an increase in the proportion of informed traders alpha affect the bid-ask spread?
@@ -242,15 +244,15 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 
 > [!question]- mkt-pqt-067 | In Kyle's (1985) continuous auction model, what is Kyle's lambda?
 > Lambda is the price impact parameter measuring the change in market clearing price per unit of net order flow: P(y) = P_0 + lambda * y.
-> It equals sqrt(Sigma_0) / (2 * sigma_u), where Sigma_0 is asset variance and sigma_u is noise trader variance.
+> In the one-period model it equals sqrt(Sigma_0) / (2 * sigma_u), where Sigma_0 is the prior variance of the asset value and sigma_u is the standard deviation of noise-trader order flow.
 
 > [!question]- mkt-pqt-068 | What is market depth in Kyle's framework and how is it related to lambda?
 > Market depth is defined as the reciprocal of Kyle's lambda: Depth = 1 / lambda = 2 * sigma_u / sqrt(Sigma_0).
 > It represents the order volume required to move the market price by one dollar.
 
 > [!question]- mkt-pqt-069 | How does noise trader volatility affect Kyle's lambda and market liquidity?
-> Higher noise trader volatility sigma_u increases market depth and decreases lambda.
-> Noise flow camouflages the informed trader's orders, enabling market makers to quote tighter spreads without incurring excessive adverse selection.
+> Higher noise-trader order flow volatility sigma_u increases market depth 1 / lambda = 2 * sigma_u / sqrt(Sigma_0) and decreases lambda.
+> Noise flow camouflages the insider, who trades more aggressively (beta = sigma_u / sqrt(Sigma_0)) but moves the price less per share.
 
 > [!question]- mkt-pqt-070 | State the Roll (1984) model equation for effective bid-ask spread.
 > Spread = 2 * sqrt(-Cov(Delta P_t, Delta P_{t-1})).
@@ -261,7 +263,7 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 > This bounce creates negative serial correlation even if the underlying fundamental value follows a pure random walk.
 
 > [!question]- mkt-pqt-072 | What is the primary limitation of Roll's effective spread estimator in empirical data?
-> Empirical price change autocovariance is frequently positive in trending markets or during institutional sweeps.
+> Empirical price change autocovariance can be positive in trending markets or during institutional sweeps.
 > When Cov(Delta P_t, Delta P_{t-1}) > 0, the term under the square root is negative, causing the basic Roll formula to fail.
 
 > [!question]- mkt-pqt-073 | Explain the two rules comprising the Lee-Ready (1991) trade classification algorithm.
@@ -278,80 +280,80 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 > 3. Adverse Selection Costs: Losses suffered by trading against informed counterparties.
 
 > [!question]- mkt-pqt-076 | How does Hasbrouck's Vector Autoregression (VAR) framework decompose price discovery?
-> It models trade arrivals and quote revisions jointly as a bivariate VAR system.
-> The permanent price impact of a trade innovation measures the true private information content, while transient impact measures inventory noise.
+> Hasbrouck (1991, Journal of Finance) models signed trades and quote revisions jointly as a bivariate VAR.
+> The cumulative (long-run) quote response to a trade innovation measures the trade's private information content; the part of the response that reverses reflects transient effects such as inventory control and price discreteness.
 
 > [!question]- mkt-pqt-077 | What is the difference between temporary and permanent price impact?
 > Temporary impact is a transient price displacement caused by local liquidity depletion that mean-reverts over time.
 > Permanent impact reflects the private information conveyed by the trade, causing a permanent shift in the asset's fundamental fair value.
 
 > [!question]- mkt-pqt-078 | What is the Square-Root Law of market impact?
-> The empirical finding that the total transaction price impact of an execution scales with the square root of the trade size normalized by daily volume: Impact ~ Y * sigma * sqrt(Q / V).
-> It holds universally across equities, fixed income, futures, and crypto.
+> The empirical finding that the average price impact of a metaorder scales with the square root of its size relative to daily volume: Impact ~ Y * sigma * sqrt(Q / V), with Y a constant of order one.
+> It is an empirical regularity reported across many asset classes (see Bouchaud, Bonart, Donier and Gould, Trades, Quotes and Prices, 2018), not a law that holds for every order.
 
 > [!question]- mkt-pqt-079 | Why does the Square-Root Law exhibit sub-linear rather than linear price impact?
-> Large institutional orders are executed via endogenous algorithmic scheduling that slows down execution when liquidity is scarce.
-> Furthermore, latent supply and demand in the broader market enters the book non-linearly as prices reach attractive levels.
+> One proposed explanation is that large institutional orders are scheduled by algorithms that slow down when liquidity is scarce.
+> Another is that latent supply and demand enters the book as prices reach attractive levels, so impact grows less than linearly; neither is settled.
 
-> [!question]- mkt-pqt-080 | How does high market fragmentation (e.g. 16 US equity exchanges) impact adverse selection?
-> Fragmentation increases adverse selection risk for passive market makers.
-> An informed trader sweeps liquidity across all venues simultaneously, filling resting limit orders on every exchange before quotes can cancel.
+> [!question]- mkt-pqt-080 | How does high market fragmentation (many US equity exchanges plus ATSs) impact adverse selection?
+> Fragmentation can increase adverse selection risk for passive market makers.
+> An informed trader can sweep liquidity across all venues at once, filling resting limit orders on every exchange before quotes can cancel.
 
 > [!question]- mkt-pqt-081 | What is a trade-through and which SEC regulation prohibits it?
-> A trade-through occurs when an exchange executes an order at a price inferior to the National Best Bid or Offer displayed on another exchange.
-> SEC Regulation NMS Rule 611 (Order Protection Rule) strictly prohibits trade-throughs on protected quotes.
+> A trade-through occurs when a trading center executes an order at a price inferior to a protected quotation displayed on another venue.
+> Regulation NMS Rule 611 (Order Protection Rule) requires trading centers to maintain policies reasonably designed to prevent trade-throughs, with exceptions such as intermarket sweep orders; as of November 2026 it is in force, and on June 11, 2026 the SEC proposed rescinding it in Release 34-105655 (a proposal, not a final rule).
 
 > [!question]- mkt-pqt-082 | What is a locked or crossed market and why is it unstable?
-> A locked market occurs when the best bid equals the best offer; a crossed market occurs when the best bid exceeds the best offer.
-> It represents an instantaneous arbitrage opportunity that high-frequency algorithms immediately eliminate by crossing the spread.
+> A locked market occurs when the best bid equals the best offer on different venues; a crossed market occurs when the best bid exceeds the best offer.
+> A crossed market is an arbitrage before fees and is traded away quickly; a locked market offers no profit before fees but confuses price priority, which is why Regulation NMS Rule 610(e) requires venues to have rules against displaying locking or crossing quotes (also proposed for rescission on June 11, 2026, in Release 34-105655).
 
 > [!question]- mkt-pqt-083 | What is a toxic quote snipe?
 > An aggressive marketable order sent to pick off a stale resting limit order that has not yet updated to reflect new external information.
 > The market maker is filled at an obsolete price and immediately incurs an adverse markout loss.
 
 > [!question]- mkt-pqt-084 | What is the Tick Size Pilot program conducted by the SEC in 2016?
-> An experimental regulatory trial that widened minimum quoting and trading ticks from $0.01 to $0.05 for selected small-cap US equities.
-> It resulted in significantly wider quoted spreads and higher execution costs for retail investors without improving market depth.
+> A two-year pilot starting in 2016 that raised the quoting increment (and, for some test groups, the trading increment) from $0.01 to $0.05 for randomly assigned groups of small-cap US stocks.
+> SEC DERA staff analysis (Hu et al., January 2018) found that test-group stocks had wider spreads, higher volatility and lower price efficiency than controls, while displayed depth at the best quotes rose.
 
 > [!question]- mkt-pqt-085 | How does asymmetric information decay over time in the Glosten-Milgrom framework?
-> As successive trades occur, Bayesian market makers observe order flow signs and update their posterior belief p_t toward the true state.
-> The spread progressively collapses toward zero as the market maker's uncertainty is eliminated by the order history.
+> As successive trades occur, the market maker updates its posterior belief p_t from the order flow signs, and p_t converges to the true state.
+> Because the spread is proportional to p_t * (1 - p_t) for small alpha, it shrinks toward zero as the uncertainty is resolved by the order history.
 
 > [!question]- mkt-pqt-086 | Why do market makers widen spreads ahead of scheduled macroeconomic announcements?
-> Pre-announcement information uncertainty (V_H - V_L) expands dramatically while noise trading volume contracts.
-> Market makers must widen quotes to defend against leakage or rapid algorithmic interpretation by specialized news-feed scrapers.
+> In Glosten-Milgrom terms, the release widens the range of possible values (V_H - V_L), and traders who read the number fastest act like informed traders (higher alpha).
+> Both raise the break-even spread, so quotes widen or are pulled until the news is in the price.
 
 > [!question]- mkt-pqt-087 | What is an informed trader's optimal trading rate in Kyle's continuous-time formulation?
-> The informed trader trades at a constant rate that gradually incorporates their private information into the market price over the trading day.
-> Trading too quickly causes severe self-inflicted price impact, while trading too slowly leaves profitable alpha uncaptured at market close.
+> The insider's trading intensity rises as the deadline nears (beta(t) = sigma_u / (sqrt(Sigma_0) * (1 - t)) on a unit horizon), and the price reveals the information at a constant rate: the posterior variance falls linearly, Sigma(t) = (1 - t) * Sigma_0, to zero at the end.
+> Trading faster would raise impact on all later trades; trading slower would leave information unexploited when the market closes.
 
 > [!question]- mkt-pqt-088 | In empirical market microstructure, what is the effective half-spread?
 > Effective Half-Spread = q_t * (P_t - S_t), where q_t is the trade direction (+1 for buy, -1 for sell), P_t is transaction price, and S_t is mid-price.
 > It measures the actual half-spread paid by the trader relative to the prevailing midpoint at execution time.
 
 > [!question]- mkt-pqt-089 | What is the realized half-spread and how does it measure market maker profit?
-> Realized Half-Spread = q_t * (P_t - S_{t + tau}), where tau is a post-trade horizon (e.g. 5 minutes).
-> It subtracts the adverse selection price drift (S_{t + tau} - S_t) from the effective spread, isolating the net revenue retained by the liquidity provider.
+> Realized Half-Spread = q_t * (P_t - S_{t + tau}), where tau is a post-trade horizon (for example 1 minute).
+> It equals the effective half-spread q_t * (P_t - S_t) minus the signed drift q_t * (S_{t + tau} - S_t), which is the adverse selection component, so it measures the revenue the liquidity provider keeps after the price moves.
 
 > [!question]- mkt-pqt-090 | What is price discovery and where does it primarily occur in fragmented equity markets?
 > Price discovery is the process through which new information is incorporated into the equilibrium market clearing price.
-> It occurs predominantly on lit primary exchanges with deep displayed liquidity and high quote turnover, such as NASDAQ and the NYSE.
+> Where it happens is an empirical question measured with information-share methods (Hasbrouck 1995); for US index exposure, Hasbrouck (2003) found most of it in the E-mini futures rather than the ETFs.
 
 > [!question]- mkt-pqt-091 | Why do wholesale internalizers offer price improvement to retail orders?
 > Internalizers execute retail trades inside the NBBO (e.g. at $100.005 when the lit quote is $100.00 x $100.01).
-> Because retail orders carry zero adverse selection, the internalizer gladly sacrifices a fraction of a cent to capture the remainder of the spread risk-free.
+> Because retail orders carry little adverse selection on average, the internalizer can give up part of the spread and still expect to earn the rest, though not risk-free: it still carries inventory risk.
 
 > [!question]- mkt-pqt-092 | What is the inventory effect on quote positioning in market microstructure?
-> A market maker with excessive long inventory lowers both its bid and ask quotes below fair value.
+> A market maker with excessive long inventory lowers both its bid and ask, shifting its reservation price below the mid.
 > This discourages incoming sellers while incentivizing incoming buyers to relieve the desk of its inventory risk.
 
 > [!question]- mkt-pqt-093 | How does high-frequency trading (HFT) affect the adverse selection component of the spread?
-> HFT market makers update quotes within microseconds of information arrivals, reducing their vulnerability to stale quote snipes.
-> This allows them to quote narrower spreads during calm regimes, though spreads widen abruptly when volatility surges.
+> HFT market makers can update quotes within microseconds of information arrivals, reducing their vulnerability to stale quote snipes.
+> That lets them quote narrower spreads in calm regimes, though their spreads can widen abruptly when volatility surges.
 
 > [!question]- mkt-pqt-094 | What is the Campbell-Grossman-Wang (1993) model of volume and return autocorrelation?
 > It shows that stock returns accompanied by high trading volume exhibit greater negative first-order serial correlation (reversal).
-> Volume-driven price moves reflect liquidity provision by risk-averse investors who demand price discounts that subsequently mean-revert.
+> Their explanation is that volume-driven price moves reflect liquidity provision by risk-averse investors who demand price discounts that subsequently mean-revert.
 
 > [!question]- mkt-pqt-095 | Explain the difference between lit market depth and dark pool crossing volume.
 > Lit market depth consists of publicly displayed, binding limit orders that establish the NBBO and contribute directly to price discovery.
@@ -359,13 +361,25 @@ $$P = [\$100.00, \$100.05, \$100.00, \$100.05, \$100.00]$$
 
 > [!question]- mkt-pqt-096 | How do market makers detect that a single large institutional parent order is active in the market?
 > By observing persistent, one-sided Order Flow Imbalance, abnormal fill rates at the ask across multiple venues, and lack of mid-price mean reversion.
-> Upon detecting an active institutional algorithm, market makers pull resting passive quotes and shade prices defensively.
+> Market makers that suspect an active institutional algorithm may pull resting passive quotes and shade prices defensively.
 
 ---
 
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_pqt_03_adverse_selection.py`](../../code/mkt_pqt_03_adverse_selection.py) prints and asserts every number on this page: Glosten-Milgrom quotes by direct Bayes enumeration in exact fractions, against the closed-form quote and spread formulas on random priors and by a seeded simulation of order arrivals; Kyle's one-period lambda by regressing simulated values on order flow, and the continuous-time posterior variance $(1 - t)\Sigma_0$ by simulating the insider's strategy; the Roll estimate on the five quoted prices, and the estimator's behaviour under independent and alternating trade signs by simulation, all with tolerances of five standard errors.
+- Related notes: [Fair Value and Microprice](02-Fair-Value-and-Microprice.md), [Inventory Risk and Skew](04-Inventory-Risk-and-Skew.md).
+
 ## Further reading
 
+- Hasbrouck, J. (1991). *Measuring the information content of stock trades*. The Journal of Finance, 46(1), 179-207.
+- Hasbrouck, J. (1995). *One security, many markets: Determining the contributions to price discovery*. The Journal of Finance, 50(4), 1175-1199.
+- Hasbrouck, J. (2003). *Intraday price formation in U.S. equity index markets*. The Journal of Finance, 58(6), 2375-2400.
+- Campbell, J. Y., Grossman, S. J., & Wang, J. (1993). *Trading volume and serial correlation in stock returns*. The Quarterly Journal of Economics, 108(4), 905-939.
+- Bouchaud, J.-P., Bonart, J., Donier, J., & Gould, M. (2018). *Trades, Quotes and Prices: Financial Markets Under the Microscope*. Cambridge University Press.
+- SEC Division of Economic and Risk Analysis (2018). Staff white paper on the Tick Size Pilot and market quality (Hu et al., January 2018), https://www.sec.gov/about/divisions-offices/division-economic-risk-analysis/staff-papers-analyses/dera_wp_tick_size-market_quality.
 - Glosten, L. R., & Milgrom, P. R. (1985). *Bid, ask and transaction prices in a specialist market with heterogeneously informed traders*. Journal of Financial Economics, 14(1), 71-100.
 - Kyle, A. S. (1985). *Continuous auctions and insider trading*. Econometrica, 53(6), 1315-1335.
 - Roll, R. (1984). *A simple implicit measure of the effective bid-ask spread in an efficient market*. The Journal of Finance, 39(4), 1127-1139.
 - Lee, C. M., & Ready, M. J. (1991). *Inferring trade direction from intraday data*. The Journal of Finance, 46(2), 733-746.
+- Securities and Exchange Commission (2026). *The Trade-Through Rule and Locked and Crossed Markets Provisions of Regulation NMS*. Proposed rule, Release No. 34-105655, File No. S7-2026-20, June 11, 2026, https://www.sec.gov/files/rules/proposed/2026/34-105655.pdf.

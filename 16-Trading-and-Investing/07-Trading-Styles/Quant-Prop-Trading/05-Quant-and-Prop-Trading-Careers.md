@@ -11,18 +11,18 @@ prereqs: []
 
 # Quantitative and Proprietary Trading Careers: Firm Models, Roles, Compensation, and Interviews
 
-The quantitative trading industry represents one of the most intellectually demanding and competitive segments of global finance.
-Navigating this ecosystem requires an exact structural understanding of institutional business models, functional role distinctions, compensation mechanics, and rigorous technical interview architectures.
-Whether deploying automated market making systems, mining predictive alphas, or engineering nanosecond execution kernels, practitioners operate under explicit mathematical risk and return constraints.
+The quantitative trading industry is a demanding and competitive segment of global finance.
+Navigating it requires a structural understanding of business models, role distinctions, compensation mechanics, and technical interviews.
+This note describes structures and mechanics; firm practices, pay terms and interview formats vary by firm and change over time, so treat any specific practice as something to confirm with the firm, as of November 2026.
 
 ---
 
 ## TL;DR
 
-Quantitative finance divides fundamentally across balance sheet origins: principal proprietary trading firms deploy internal partner capital with ultra-low latency or statistical arbitrage focus; multi-manager hedge funds run leveraged pod structures with tight cut-offs; and single-manager funds deploy long-horizon systematic strategies.
+Quantitative trading firms differ first by whose capital they trade: proprietary trading firms trade their own capital, multi-manager hedge funds allocate outside investors' capital to many semi-independent teams (pods) with drawdown limits, and single-manager systematic funds run centralized research on pooled outside capital.
 Core roles divide into Quantitative Traders (QT: real-time risk, book management, market making), Quantitative Researchers (QR: signal extraction, statistical modeling, feature engineering), and Quantitative Developers (QD: low-latency C++, exchange gateways, data infrastructure).
-Compensation in prop firms follows formulaic payout models (e.g., 10% to 30% of desk net PnL minus capital charges), whereas hedge fund pod shops offer formulaic pass-throughs subject to strict high-water marks and drawdown limits.
-Interviews test domain-specific fundamentals: mental math and Bayesian probability games for QTs; statistics, machine learning, and time-series econometrics for QRs; and modern C++, memory hierarchy, and lock-free systems for QDs.
+Variable pay is often tied to a share of net PnL after costs and capital charges; the share, the deductions, high-water marks and deferral are contract terms to read, not industry constants.
+Prepare along the role: mental math and Bayesian probability games for QT seats; statistics, machine learning and time-series econometrics for QR seats; modern C++, the memory hierarchy and lock-free systems for QD seats.
 
 ---
 
@@ -40,46 +40,45 @@ Interviews test domain-specific fundamentals: mental math and Bayesian probabili
 
 ### 1. Institutional Firm Taxonomy and Business Models
 
-The buy-side and sell-side quantitative landscape partitions into four primary institutional architectures, each defined by its source of capital, regulatory regime, and horizon of edge:
+The buy-side and sell-side quantitative landscape can be grouped into four institutional models, distinguished by source of capital, regulatory regime, and holding horizon:
 
 1. **Proprietary Trading Firms (Principal Trading Organizations)**:
-   - *Archetypal Firms*: Jane Street, Citadel Securities, Jump Trading, Optiver, IMC, DRW, Flow Traders, Susquehanna International Group (SIG), Hudson River Trading (HRT).
-   - *Capital Structure*: 100% partner/internal balance sheet capital.
-   - *External Clients*: Generally none; firms act exclusively as market participants trading for their own account.
-   - *Primary Mandate*: High-frequency automated market making (AMM), electronic liquidity provision, statistical arbitrage, and cross-asset relative value.
-   - *Horizon*: Microseconds to intraday; minimal overnight unhedged directional inventory.
-   - *Regulatory Environment*: Regulated as broker-dealers or proprietary trading entities (e.g., SEC/FINRA in the US, CFTC for futures, FCA in the UK, SEBI in India); exempt from external client fiduciary rules.
+   - *Commonly cited examples*: Jane Street, Citadel Securities, Jump Trading, Optiver, IMC, DRW, Flow Traders, Susquehanna International Group (SIG), Hudson River Trading (HRT).
+   - *Capital Structure*: The firm's own capital (owners' equity plus any borrowing), with no outside investors in a trading fund.
+   - *External Clients*: Some act as market makers or wholesalers that trade with customers' orders, but they trade as principal for their own account.
+   - *Primary Activities*: Electronic market making and liquidity provision, statistical arbitrage, and cross-asset relative value.
+   - *Horizon*: Mostly microseconds to intraday for electronic market making; longer for relative-value books.
+   - *Regulation*: Typically registered as broker-dealers or exchange members and supervised accordingly (for example SEC and FINRA in the US, CFTC and NFA for futures, FCA in the UK).
 
 2. **Multi-Manager Hedge Funds (Pod Shops)**:
-   - *Archetypal Firms*: Citadel (Global Quantitative Strategies / Surveyor), Millennium Management, Point72, Balyasny Asset Management (BAM), ExodusPoint, Schonfeld.
-   - *Capital Structure*: External institutional limited partner (LP) capital combined with prime brokerage leverage (frequently 4x to 8x gross leverage).
-   - *Organizational Topology*: Decentralized autonomous investment pods led by a Portfolio Manager (PM) accompanied by dedicated QRs and QDs.
-   - *Risk Mandate*: Strict factor neutrality (zero beta to broader equity indices, zero style tilts toward momentum, size, or value) with low drawdown tolerance.
-   - *Drawdown Triggers*: Tight stop-out limits; a pod experiencing a 5% drawdown typically suffers capital halving, while an 8% to 10% drawdown triggers immediate contract termination and book liquidation.
+   - *Commonly cited examples*: Citadel, Millennium Management, Point72, Balyasny Asset Management (BAM), ExodusPoint, Schonfeld.
+   - *Capital Structure*: Outside investors' capital, usually run with leverage from prime brokers.
+   - *Organization*: Many semi-independent teams (pods), each led by a Portfolio Manager (PM) with its own analysts, QRs and QDs.
+   - *Risk Mandate*: Pods are usually expected to keep market beta and common factor exposures small, so that returns come from idiosyncratic views.
+   - *Drawdown Limits*: Pods run under drawdown limits that can cut their capital or close them; the levels are set by each firm and contract and are not public.
    - *Horizon*: Intraday to several weeks.
 
 3. **Single-Manager Systematic Hedge Funds**:
-   - *Archetypal Firms*: Renaissance Technologies, Two Sigma, D.E. Shaw, AQR Capital Management, CFM (Capital Fund Management), Graham Capital.
+   - *Commonly cited examples*: Renaissance Technologies, Two Sigma, D.E. Shaw, AQR Capital Management, CFM (Capital Fund Management), Graham Capital.
    - *Capital Structure*: Pooled institutional capital managed under centralized investment mandates.
    - *Research Culture*: Highly collaborative, centralized alpha codebases and shared execution infrastructure.
    - *Primary Mandate*: Medium-frequency statistical arbitrage, alternative data systematic equities, trend-following managed futures (CTA), and global macro.
    - *Horizon*: Days to months; statistical power derived from broad multi-asset cross-sectional breadth.
 
 4. **Sell-Side Flow Desks and Market Making**:
-   - *Archetypal Firms*: Goldman Sachs, Morgan Stanley, JPMorgan, Barclays, Deutsche Bank, BNP Paribas.
-   - *Capital Structure*: Bank depository and repo balance sheet subject to Basel III / IV regulatory capital constraints (FRTB, SA-CCR, Volcker Rule).
+   - *Commonly cited examples*: Goldman Sachs, Morgan Stanley, JPMorgan, Barclays, Deutsche Bank, BNP Paribas.
+   - *Capital Structure*: Bank balance sheet subject to Basel III regulatory capital and liquidity rules (including FRTB market-risk capital and SA-CCR counterparty capital) and, for US banking entities, the Volcker Rule limits on proprietary trading.
    - *Client Franchise*: High-touch institutional clients, corporate hedgers, sovereign wealth funds, and mutual funds.
    - *Primary Mandate*: Flow facilitation, structured derivatives underwriting, corporate FX/rates hedging, and bilateral OTC liquidity provision.
    - *Horizon*: Hours to multi-year structured products.
 
 | Feature | Prop Trading Firm | Multi-Manager Pod Shop | Single-Manager Systematic | Sell-Side Bank Desk |
 | :--- | :--- | :--- | :--- | :--- |
-| **Capital Source** | Internal Partners | Institutional LPs + Leverage | Pooled Institutional LPs | Bank Balance Sheet / Deposits |
-| **Client Mandate** | Pure Principal | Absolute Return (Zero Beta) | Benchmark-Relative / Alpha | Client Facilitation & Flow |
-| **Typical Leverage** | 2x - 10x intraday | 4x - 8x gross | 2x - 4x gross | Constrained by Basel III LCR/NSFR |
-| **Turnover Horizon** | Sub-millisecond to Hours | Hours to Weeks | Days to Months | Intraday Flow to Multi-Year OTC |
-| **Drawdown Regime** | Desk-specific risk limits | Strict pod liquidations (-8%) | Institutional mandate limits | Strict VaR / Stress capital limits |
-| **Culture** | Flat, tech-centric, collegiate | Siloed, high accountability | Collaborative, academic | Hierarchical, regulatory-driven |
+| **Capital Source** | Firm's own capital | Outside investors plus prime-broker leverage | Pooled outside investors | Bank balance sheet |
+| **Mandate** | Principal trading | Absolute return, low factor exposure | Fund mandate | Client facilitation and flow |
+| **Leverage constraint** | Firm risk limits and broker/clearing margin | Fund and prime-broker limits | Fund mandate limits | Basel III capital and liquidity rules |
+| **Turnover Horizon** | Sub-millisecond to hours | Hours to weeks | Days to months | Intraday flow to multi-year OTC |
+| **Drawdown Regime** | Desk-specific risk limits | Contractual pod drawdown limits | Fund-level risk limits | VaR and stress limits |
 
 ### 2. Functional Role Archetypes and Skill Matrices
 
@@ -142,58 +141,53 @@ Quantitative trading operations rely on three interdependent technical disciplin
 
 Compensation structures in quantitative finance vary substantially based on whether capital is internal or external:
 
-#### Prop Firm Formulaic Payout Economics
-Proprietary trading firms typically compensate traders and key researchers via a formulaic desk PnL cut:
-$$\text{Bonus Pool} = \max\left(0, \;\; \phi \cdot \left(\text{Gross PnL} - \text{Exchange Fees} - \text{Desk Overhead} - c_{\text{cap}} \cdot \text{Capital}\right)\right)$$
+#### Formulaic Payout Economics
+Where pay is formulaic, the bonus pool is a contractual share of desk PnL after deductions:
+$$\text{Bonus Pool} = \max\left(0, \;\; \phi \cdot \left(\text{Gross PnL} - \text{Exchange Fees} - \text{Desk Overhead} - \text{Base Salaries} - c_{\text{cap}} \cdot \text{Capital}\right)\right)$$
 Where:
-- $\phi$: Formulaic cut percentage, typically ranging from $10\%$ to $30\%$ for established traders or sub-teams.
-- $\text{Exchange Fees}$: Pure pass-through transaction costs, colocation rack fees, and telecom cross-connect bills.
-- $\text{Desk Overhead}$: Software licenses, market data feed royalties (e.g., Bloomberg/Refinitiv terminals, exchange feeds), depreciation of dedicated server hardware.
-- $c_{\text{cap}}$: Cost of capital charge assessed by the firm's treasury on utilized balance sheet equity (e.g., SOFR + 200 bps).
+- $\phi$: The contractual payout share; it varies by firm, seat and seniority, and many firms pay discretionary rather than formulaic bonuses.
+- $\text{Exchange Fees}$: Transaction costs passed through to the desk, and possibly colocation and connectivity charges.
+- $\text{Desk Overhead}$: Software licenses, market data, hardware; which items are charged to the desk is a negotiated term.
+- $\text{Base Salaries}$: The fixed pay of the desk's staff, deducted before the payout share is applied.
+- $c_{\text{cap}}$: An internal charge on capital or balance sheet used, set by the firm.
 
 #### Pod Shop Pass-Through Economics
-In multi-manager pod shops, Portfolio Managers negotiate a contract with explicit pass-through compensation:
-- Payout: Typically $15\%$ to $22\%$ of net pod PnL.
-- The PM pays salaries and discretionary bonuses of their sub-team (QRs and QDs) directly out of this payout pool.
-- High-Water Mark (HWM): Any cumulative loss must be fully recovered before subsequent performance bonuses accrue.
-- Clawback Mechanisms: Portions of earned bonuses are deferred over 2 to 3 years to guard against latent tail risk or catastrophic blow-ups.
+In multi-manager pod shops, Portfolio Managers negotiate contracts whose terms commonly include:
+- Payout: A contractual percentage of net pod PnL.
+- Team costs: The PM may pay the team's salaries and bonuses out of that payout.
+- High-Water Mark (HWM): Cumulative losses must be recovered before new performance pay accrues.
+- Deferral and clawback: Part of the bonus may be deferred over several years and forfeited after later losses or departure.
 
 #### Restrictive Covenants and Employment Law
-- **Garden Leave**: An active employment period where the employee resigns, ceases all trading and technical duties, but remains on the firm payroll without access to office premises or systems (typically 1 to 6 months).
-- **Non-Compete Agreement**: A post-termination covenant prohibiting the employee from joining a competitor or launching a competing fund.
-- In quantitative trading, non-compete periods range from 3 months (junior engineers) to 12-24 months (senior QTs, prominent QRs, or pod PMs), during which the former employer pays full base salary or a contractual percentage of prior total compensation.
+- **Garden Leave**: A notice period during which the employee remains employed and paid but does no work and has no access to systems; its length is set by contract.
+- **Non-Compete Agreement**: A post-termination covenant restricting the employee from joining a competitor or launching a competing business for a stated period.
+- Enforceability depends on jurisdiction: California, for example, voids most employee non-competes (Business and Professions Code section 16600), while other jurisdictions enforce restrictions they judge reasonable; whether a restricted period is paid, and how much, is a contract term to check before signing.
 
 ### 4. Technical Interview Architectures and Selection Rubrics
 
-Quantitative hiring processes employ standardized, highly filtered interview loops tailored to specific technical competencies:
+Interview loops differ by firm and role and change over time; the funnel below is a generic shape to prepare for, not a description of any one firm:
 
 ```
 +-----------------------------------------------------------------------------------+
-|                        QUANTITATIVE INTERVIEW FUNNEL                              |
+|                        GENERIC QUANT INTERVIEW FUNNEL                             |
 +-----------------------------------------------------------------------------------+
 |                                                                                   |
-|  [Step 1: Resume Screen] ---> Top STEM Degrees, Competitive Olympiads (IMO/IOI/   |
-|                               Putnam), Kaggle Grandmasters, GitHub Contributions  |
+|  [Step 1: Resume Screen] ---> Degree, competition results, projects, experience   |
 |                                                                                   |
-|  [Step 2: Automated Test] --> Mental Math (Zetamac 50+), 80-minute HackerRank C++ |
-|                               or Proctored Probability Test (Combinatorics/Puzzles|
+|  [Step 2: Online Test] -----> Timed arithmetic, probability, or coding test       |
 |                                                                                   |
-|  [Step 3: Technical Phone] -> Live Market Making Game, Probability Brainteasers,   |
-|                               Low-level Systems Coding, Walkthrough of Research   |
+|  [Step 3: Technical Screen] > Probability questions, market making game, coding,  |
+|                               or a walkthrough of past research                   |
 |                                                                                   |
-|  [Step 4: The Superday] ----> 4 to 6 Back-to-Back 60-Minute Specialized Rounds:   |
-|                               - Round 1: Fast Probability & Martingales           |
-|                               - Round 2: Interactive Market Making & Stress Game  |
-|                               - Round 3: Machine Learning & Backtesting Traps     |
-|                               - Round 4: C++ Architecture & Memory Profiling      |
-|                               - Round 5: Behavioral, Culture & Risk Ethics        |
+|  [Step 4: Final Round] -----> Several technical rounds on the role's core skills  |
+|                               plus behavioral questions                           |
 |                                                                                   |
-|  [Step 5: Partner Offer] ---> Desk Placement, PnL Cut Terms, Non-Compete Scope    |
+|  [Step 5: Offer] -----------> Team placement, pay terms, restrictive covenants    |
 +-----------------------------------------------------------------------------------+
 ```
 
 #### The Market Making Interview Game
-The hallmark of the Quantitative Trader interview is the interactive market making simulation:
+A common exercise for trading candidates is an interactive market making game:
 1. The interviewer presents an unknown parameter $X$ (e.g., "The number of elevators in Manhattan", "The closing price of Brent crude tomorrow", or the outcome of rolling 10 dice).
 2. The candidate must post a continuous two-sided market: $\text{Bid} \times \text{Ask}$ along with depth/size.
 3. The interviewer trades against the candidate's quotes based on their own assessment or hidden information.
@@ -220,7 +214,7 @@ The hallmark of the Quantitative Trader interview is the interactive market maki
 
 ### Example 1: Formulaic Desk Bonus and Capital Charge Calculation
 
-A quantitative proprietary trading desk manages \$50,000,000 in balance sheet equity with a 4x intraday leverage facility.
+A quantitative proprietary trading desk manages \$50,000,000 in balance sheet equity with a 4x intraday leverage facility (all figures in this example are hypothetical).
 Over the calendar year, the desk achieves the following financial performance:
 - Gross trading profits: \$18,500,000
 - Exchange fees, clearing, and brokerage: \$3,200,000
@@ -272,9 +266,10 @@ You are required to make a two-sided market on the probability that the chosen d
 
 5. **Construct the Market**:
    - The fair mathematical expectation of the event indicator is exactly $0.50$ (or $50\%$).
-   - In the market making game, quoting with zero spread guarantees being adversely selected.
-   - A competitive candidate quotes: "I am $47$ at $53$, $10$ up" (meaning willing to buy at $0.47$ and sell at $0.53$, size 10 contracts).
-   - If the interviewer hits the candidate's bid at $0.47$ (selling to the candidate), the candidate is now long 10 contracts at an expected edge of $+0.03$ per contract, but must immediately skew the subsequent quote lower (e.g., $45$ at $51$) to discourage further selling and attract buyers.
+   - In the market making game, quoting 0.50 with zero spread leaves no edge, and the interviewer, who saw which die was chosen, can trade against it profitably every time.
+   - A candidate might quote: "I am $47$ at $53$, $10$ up" (meaning willing to buy at $0.47$ and sell at $0.53$, size 10 contracts).
+   - If the interviewer hits the bid at $0.47$ (selling to the candidate), the candidate is long 10 contracts at an edge of $0.50 - 0.47 = +0.03$ per contract against the public posterior.
+   - The interviewer saw which die was chosen, so the sale is itself evidence that the die is fair; the candidate should lower the quote (e.g., $45$ at $51$) to discourage further selling and attract buyers.
 
 ### Example 3: Low-Latency C++ Latency Budget and False Sharing
 
@@ -288,7 +283,7 @@ struct BadDeskStats {
     uint64_t fills_core1; // Byte offset 8
     uint64_t fills_core2; // Byte offset 16
     uint64_t fills_core3; // Byte offset 24
-}; // Total size: 32 bytes, resides within a single 64-byte cache line
+}; // Total size: 32 bytes, so all four counters fit in (and, if 32-byte aligned, share) one 64-byte cache line
 
 // Cache-aligned, hardware-isolated memory layout
 struct alignas(64) CoreStats {
@@ -302,25 +297,27 @@ struct OptimizedDeskStats {
 ```
 
 1. **Analysis of Cache Contention**:
-   - Standard x86-64 CPUs operate on 64-byte cache lines.
-   - In `BadDeskStats`, all four uint64_t fields share one 64-byte cache line.
-   - When Core 0 increments `fills_core0`, its L1 cache invalidates the entire cache line across Cores 1, 2, and 3 via the MESI cache coherence protocol.
-   - Cores 1, 2, and 3 suffer an L1 cache miss, forcing an interconnect round-trip to L3 or main memory, introducing 40 to 120 nanoseconds of latency jitter on the critical execution path.
+   - Current Intel and AMD x86-64 CPUs use 64-byte cache lines (some other CPUs, such as Apple's M-series, use 128 bytes; C++17 exposes `std::hardware_destructive_interference_size` for this).
+   - In `BadDeskStats`, the four uint64_t fields share one cache line whenever the 32-byte struct does not straddle a 64-byte boundary, which a 32-byte alignment guarantees.
+   - With only its natural 8-byte alignment it can split across two lines, but some pair of counters still shares a line at every placement, so false sharing remains either way.
+   - When Core 0 writes `fills_core0`, the coherence protocol (MESI or a variant) invalidates the copies of that line held by Cores 1, 2, and 3.
+   - Their next access misses and must fetch the line from another core's cache, so the line ping-pongs between cores and every increment pays a coherence miss instead of an L1 hit; measure the cost with `perf` on the target machine rather than assuming a number.
 2. **Analysis of the Cache-Aligned Layout**:
-   - `alignas(64)` guarantees that each thread's data structure sits on its own hardware cache line.
-   - Core 0 mutates its local cache line without invalidating the L1 cache lines of the remaining cores, eliminating false sharing and restoring deterministic sub-50-nanosecond execution speeds.
+   - `alignas(64)` makes each `CoreStats` start on its own 64-byte boundary, and the padding makes it fill the line.
+   - The 64-byte alignment is a compiler guarantee that the `ctypes` script cannot check; it checks only the sizes and offsets.
+   - Each core writes only its own line, so the counters no longer invalidate each other: false sharing is gone.
 
 ---
 
 ## Pitfalls
 
 - **Confusing Principal Risk with Agency Flow**: Assuming sell-side investment bank structuring operates identically to buy-side proprietary market making.
-  Banks prioritize client facilitation, regulatory balance sheet limits, and franchise value; prop shops trade pure principal capital with zero customer obligations.
+  Banks prioritize client facilitation, regulatory balance sheet limits, and franchise value; prop firms trade their own capital as principal.
 - **Ignoring the Cost of Capital and Pass-Through Charges**: Evaluating a prop or pod job offer solely on gross payout percentage without verifying whether infrastructure costs, software licenses, data feeds, and capital charges are deducted prior to PnL distribution.
-- **Overlooking Non-Compete Scope and Enforceability**: Signing an aggressive 18-month non-compete without explicit contractual guarantees of 100% base salary and average bonus compensation throughout the mandatory garden leave period.
-- **Neglecting Transaction Costs and Latency Slippage in Alpha Research**: Proposing a high-turnover predictive model with an apparent Sharpe ratio of 3.5 that degrades to negative returns once realistic bid-ask half-spreads, exchange maker-taker fees, and exchange queue positions are simulated.
+- **Overlooking Non-Compete Scope and Enforceability**: Signing a long non-compete without checking whether, and how much, you are paid during the restricted period and whether it is enforceable where you work.
+- **Neglecting Transaction Costs and Latency Slippage in Alpha Research**: Presenting a high-turnover model whose backtest looks strong before costs, without showing that it survives realistic half-spreads, exchange fees, and queue position.
 - **Failing to Skew During Market Making Games**: Maintaining stationary symmetric spreads when an interviewer repeatedly trades on one side of the market.
-  Repeatedly buying without lowering quotes signals severe adverse selection blindness.
+  Repeatedly buying without lowering quotes shows the candidate is ignoring the information in the trades.
 - **Premature C++ Optimization Without Hardware Benchmarking**: Writing obscure low-level assembly or bit-manipulation tricks without measuring hardware performance counters via tools like `perf`, resulting in branch mispredictions or instruction cache thrashing.
 
 ---
@@ -328,8 +325,8 @@ struct OptimizedDeskStats {
 ## Interview questions
 
 > [!question]- mkt-car-001 | What is the fundamental difference in capital source and client mandate between a proprietary trading firm and a multi-manager hedge fund?
-> Proprietary trading firms trade 100% internal partner balance sheet capital with zero external clients or fiduciary obligations, acting purely as principal market makers or statistical arbitrageurs.
-> Multi-manager hedge funds deploy external institutional limited partner (LP) capital combined with prime brokerage leverage across autonomous pods, enforcing strict factor neutrality and tight loss cut-offs.
+> Proprietary trading firms trade their own capital as principal, with no outside investors in the trading book, as market makers or statistical arbitrageurs.
+> Multi-manager hedge funds allocate outside investors' capital, usually with prime-broker leverage, across semi-independent pods that are expected to keep factor exposures low and run under contractual drawdown limits.
 
 > [!question]- mkt-car-002 | How does the day-to-day workflow and objective function differ between a Quantitative Trader (QT) and a Quantitative Researcher (QR)?
 > A Quantitative Trader focuses on real-time execution, managing live book risk, adjusting pricing spreads, monitoring inventory skews, and handling market regime shifts during trading hours.
@@ -340,21 +337,22 @@ struct OptimizedDeskStats {
 > Key competencies include modern C++ (C++17/20), Linux kernel internals, cache optimization, lock-free concurrency, kernel-bypass network protocols (Solarflare OpenOnload, DPDK), and low-level system profiling.
 
 > [!question]- mkt-car-004 | What is a formulaic payout compensation model in a proprietary trading firm, and how is the bonus pool calculated?
-> A formulaic payout model awards the trading desk an explicit contractual percentage (typically 10% to 30%) of net trading profits.
-> The bonus pool equals max(0, payout_pct * (Gross PnL - Exchange Fees - Infrastructure Overhead - Capital Charges)).
+> A formulaic payout model awards the desk a contractual percentage of net trading profits; the percentage is negotiated and varies by firm and seat, and many firms pay discretionary bonuses instead.
+> The bonus pool equals max(0, payout_pct * (Gross PnL - Exchange Fees - Infrastructure Overhead - Base Salaries - Capital Charges)).
 
-> [!question]- mkt-car-005 | In a multi-manager pod shop, what are typical drawdown triggers that result in capital halving or pod liquidation?
-> Multi-manager hedge funds typically enforce a two-tier risk stop: a 5% peak-to-trough drawdown results in an automatic 50% reduction in allocated risk capital, while an 8% to 10% cumulative drawdown triggers immediate contract termination, complete book liquidation, and pod shutdown.
+> [!question]- mkt-car-005 | In a multi-manager pod shop, how do drawdown limits work, and what should a PM candidate ask about them?
+> Pods typically face a tiered stop: a first drawdown level that cuts allocated capital and a deeper level at which the pod is closed and its book liquidated.
+> The levels, the measurement window, and whether the high-water mark resets are contract terms set by each firm and are not public, so a candidate should ask for them in writing.
 
 > [!question]- mkt-car-006 | What is a High-Water Mark (HWM) in hedge fund compensation agreements?
 > A High-Water Mark is a contractual provision ensuring that a portfolio manager or desk receives performance fees only after fully recovering past cumulative losses, preventing managers from collecting incentive fees on volatile bounce-backs without net wealth creation.
 
 > [!question]- mkt-car-007 | What is the legal and operational distinction between "garden leave" and a "non-compete period"?
 > Garden leave is an active employment phase after resignation where the employee remains on the firm payroll and receives full salary/benefits while being locked out of company systems and barred from work.
-> A non-compete is a post-termination restrictive covenant prohibiting the former employee from working for a competing entity for a specified duration, typically compensated via statutory or contractual payments.
+> A non-compete is a post-termination restrictive covenant prohibiting the former employee from working for a competing entity for a specified duration; whether that period is paid is set by the contract, and enforceability depends on the jurisdiction.
 
 > [!question]- mkt-car-008 | Why do quantitative trading firms assess an internal "cost of capital" charge against desk PnL?
-> An internal cost of capital charge reflects the firm treasury's opportunity cost and funding hurdle rate for extending balance sheet liquidity and margin to a desk, ensuring trading strategies deliver returns exceeding risk-free money market yields or corporate funding costs.
+> An internal cost of capital charge reflects the firm treasury's opportunity cost and funding hurdle rate for extending balance sheet liquidity and margin to a desk, so a strategy is credited only with returns above risk-free money market yields or corporate funding costs.
 
 > [!question]- mkt-car-009 | In an interactive market making interview game, why must a candidate immediately widen their spread and skew quotes after a trade?
 > A trade execution signals potential adverse selection, indicating the counterparty may possess superior information or toxic order flow.
@@ -371,15 +369,17 @@ struct OptimizedDeskStats {
 > [!question]- mkt-car-012 | What is the Deflated Sharpe Ratio (DSR), and why is it essential in quantitative research candidate evaluations?
 > The Deflated Sharpe Ratio adjusts the standard estimated Sharpe ratio for selection bias under multiple testing, accounting for non-normal asset return skewness/kurtosis, sample length, and the total number of trial strategies tested during research to prevent overfitting.
 
-> [!question]- mkt-car-013 | What is kernel bypass, and why is it universally employed in ultra-low latency execution gateways?
-> Kernel bypass (e.g., Solarflare OpenOnload or Intel DPDK) routes network packets directly from the physical network interface card (NIC) to user-space application memory, completely bypassing the operating system kernel's TCP/IP stack, socket buffers, and system call interrupt context switches, reducing round-trip latency from microseconds to sub-microsecond levels.
+> [!question]- mkt-car-013 | What is kernel bypass, and why is it used in low-latency execution gateways?
+> Kernel bypass (e.g., Solarflare OpenOnload or DPDK) moves packets between the network interface card (NIC) and user-space application memory without going through the operating system kernel's network stack, socket buffers and system calls.
+> Removing those copies, context switches and interrupts cuts latency and, as important, its variance; measure the gain on your own hardware.
 
 > [!question]- mkt-car-014 | What is the difference between a maker-taker pricing model and an inverted (taker-maker) fee schedule?
 > In a maker-taker venue, liquidity providers (limit orders) receive a rebate for adding liquidity, while liquidity takers (market orders) pay a transaction fee.
-> In an inverted (taker-maker) venue, liquidity providers pay a fee to quote while liquidity takers receive a rebate, attracting aggressive retail flow and providing faster fill queues for passive makers.
+> In an inverted (taker-maker) venue, liquidity providers pay a fee to post while liquidity takers receive a rebate, which attracts takers and keeps resting queues shorter, so passive orders fill sooner.
 
-> [!question]- mkt-car-015 | How does an interviewer test a candidate's mental math and probabilistic thinking under time pressure?
-> Interviewers deploy timed mental arithmetic batteries (e.g., Zetamac tests requiring 45+ score in 120 seconds), rapid compounding approximations, two-sided probability betting games with asymmetric payoffs, and rolling Bayesian updates where new evidence is introduced mid-calculation.
+> [!question]- mkt-car-015 | How can a candidate prepare for mental math and probabilistic thinking under time pressure?
+> Practice timed arithmetic drills (the free Zetamac arithmetic game runs 120-second rounds by default), quick compounding approximations, two-sided betting games with asymmetric payoffs, and Bayesian updates where new evidence arrives mid-calculation.
+> Score targets differ by firm and are not published, so practice to a steady pace with no errors.
 
 > [!question]- mkt-car-016 | In probability interviews, what is the Optional Stopping Theorem, and what are its standard trading applications?
 > The Optional Stopping Theorem states that the expected value of a martingale stopped at a stopping time equals its initial expectation under specific boundedness or finite stopping conditions.
@@ -387,30 +387,32 @@ struct OptimizedDeskStats {
 
 > [!question]- mkt-car-017 | How does survivorship bias distort historical quantitative equity backtests?
 > Survivorship bias occurs when a backtest includes only companies that currently exist, excluding firms that went bankrupt, merged, or were delisted over the historical period.
-> This artificially inflates simulated returns and understates tail risk and maximum drawdowns.
+> This usually inflates simulated returns and understates tail risk and maximum drawdowns.
 
 > [!question]- mkt-car-018 | What is the role of memory ordering semantics like std::memory_order_relaxed vs std::memory_order_acquire/release in C++ lock-free queues?
-> `memory_order_relaxed` guarantees atomic reads and writes without enforcing synchronization or memory operation reordering across threads.
-> `memory_order_release` ensures prior writes are made visible to other threads, while `memory_order_acquire` prevents reads/writes after the acquire from being reordered before it, enabling lock-free message passing with minimal hardware bus locking.
+> `memory_order_relaxed` makes the operation itself atomic but imposes no ordering on other memory operations and creates no synchronization between threads.
+> A release store paired with an acquire load that reads the stored value synchronizes the two threads: every write before the release is visible to the reader after the acquire, which is exactly what a producer needs to publish a filled slot to a consumer.
 
 > [!question]- mkt-car-019 | What are the primary differences between Single-Producer Single-Consumer (SPSC) and Multi-Producer Multi-Consumer (MPMC) lock-free ring buffers?
 > An SPSC ring buffer requires no atomic read-modify-write instructions (like CAS) on head and tail pointers since only one thread mutates each index, operating with simple atomic load/store acquire-release semantics.
 > An MPMC queue requires atomic compare-and-swap (CAS) loops or ticket schemes to handle contention across threads, incurring higher latency and cache synchronization overhead.
 
 > [!question]- mkt-car-020 | What is the purpose of CPU core pinning and thread affinity in electronic market making infrastructure?
-> Thread affinity binds critical execution threads to designated physical CPU cores using system calls like `pthread_setaffinity_np`, preventing the operating system scheduler from migrating threads between cores, which preserves L1/L2 cache warmth and eliminates context switching penalties.
+> Thread affinity binds critical execution threads to designated physical CPU cores using system calls like `pthread_setaffinity_np`, preventing the operating system scheduler from migrating threads between cores, which keeps its L1/L2 caches warm.
+> Pinning alone does not stop other threads or interrupts from running on that core, so latency-sensitive setups also isolate the cores (for example with `isolcpus` or cpusets and IRQ affinity) to avoid context switches.
 
 > [!question]- mkt-car-021 | Why do hedge fund pod shops mandate factor neutrality (e.g., zero beta to market, value, momentum)?
-> Pod shops require alpha that is uncorrelated with broad asset classes and systemic risk premia.
-> If a pod holds unhedged beta or style tilts, its performance reflects systemic market risk rather than idiosyncratic skill, exposing the fund to severe systemic drawdowns that cannot be leveraged safely.
+> Pod shops typically want alpha that is uncorrelated with broad asset classes and systematic risk premia.
+> If a pod holds unhedged beta or style tilts, its performance reflects market risk rather than idiosyncratic skill, and the fund's leverage amplifies market drawdowns instead of diversified idiosyncratic returns.
 
 > [!question]- mkt-car-022 | What is a post-trade markout curve, and what does a decaying markout signify to a quantitative trader?
 > A markout curve measures the cumulative price movement of an instrument relative to the execution price at discrete intervals (e.g., 1ms, 10ms, 1s, 10s) following a trade.
-> A markout that quickly drifts against the trader's position indicates toxic informed counterparty flow and adverse selection.
+> A markout that quickly drifts against the trader's position suggests informed counterparty flow and adverse selection.
 
 > [!question]- mkt-car-023 | In statistical arbitrage, what is cointegration, and how does it differ from simple correlation?
 > Correlation measures the linear co-movement of periodic returns, which can be transient or spurious.
-> Cointegration indicates that a linear combination of non-stationary asset price series is stationary, confirming a true long-run economic equilibrium spread that mean-reverts over time.
+> Cointegration means that a linear combination of non-stationary asset price series is stationary, so the spread mean-reverts in the estimation sample.
+> It is a statistical property of that sample, not proof of a permanent economic equilibrium, and the relation can break.
 
 > [!question]- mkt-car-024 | What is the significance of non-allocatable overhead in desk PnL accounting?
 > Non-allocatable overhead includes firm-wide executive salaries, central legal/compliance budgets, and enterprise facilities costs.
@@ -424,13 +426,14 @@ struct OptimizedDeskStats {
 > The ruin probability is therefore 1 - k / A, which falls linearly as starting capital k rises toward the target A; in a fair game, deeper capital buys survival odds but never positive expectancy.
 
 > [!question]- mkt-car-027 | What is the significance of cache warming in algorithmic trading systems?
-> Cache warming involves pre-loading instructions and lookup table data into CPU L1 instruction and data caches prior to anticipated market events (e.g., scheduled macroeconomic releases), preventing initial cold-cache misses when execution signals trigger.
+> Cache warming involves pre-loading instructions and lookup table data into CPU L1 instruction and data caches prior to anticipated market events (e.g., scheduled macroeconomic releases), reducing cold-cache misses when execution signals trigger.
 
 > [!question]- mkt-car-028 | Why is lookahead bias prevalent in machine learning models trained on financial statement data?
 > Lookahead bias occurs when corporate earnings or fundamental ratios are stamped with their fiscal quarter end date rather than the actual subsequent date and time when the regulatory SEC 10-Q/10-K report was publicly released, allowing models to trade on unreleased historical information.
 
 > [!question]- mkt-car-029 | What is the purpose of an execution venue's Speed Bump, and how does it affect market making latency strategies?
-> A speed bump introduces an intentional, deterministic latency delay (e.g., IEX's 350-microsecond coil) on incoming aggressive orders, allowing passive resting quotes from market makers to update and cancel stale quotes before predatory high-frequency latency arbitrageurs can pick them off.
+> A speed bump is an intentional delay on inbound messages; IEX's is 350 microseconds, produced by coiled fiber, and it applies to cancels as well as new orders.
+> IEX reprices its own pegged orders from market data that does not pass through the delay, so those orders move before a latency arbitrageur's order arrives; it does not let outside market makers cancel faster.
 
 > [!question]- mkt-car-030 | How does a candidate answer a market making question when asked to make a market on an uncertain quantity with no initial data?
 > The candidate should first state a broad, conservative spread reflecting extreme uncertainty, specify clear size limits, explain their underlying distributional assumptions, and proactively state what information would cause them to narrow their spread or skew their quote.
@@ -439,16 +442,22 @@ struct OptimizedDeskStats {
 > An OMS manages long-term portfolio positions, regulatory compliance limits, order routing workflows, and allocation across accounts.
 > An EMS connects directly to market venues and brokers, focusing on real-time execution algorithms, route optimization, queue telemetry, and low-latency order placement.
 
-> [!question]- mkt-car-032 | Why do top quantitative firms prefer candidates with competitive programming or math olympiad backgrounds?
-> Competitive programming and olympiad contests test the ability to rapidly dissect complex novel problems, formulate optimal algorithmic solutions under extreme time pressure, write bug-free code on the first attempt, and handle mathematical edge cases intuitively.
+> [!question]- mkt-car-032 | Why might quantitative firms value competitive programming or math olympiad results?
+> They are public, standardized signals of the skills these interviews probe: solving unfamiliar problems quickly, reasoning precisely under time pressure, and handling edge cases.
+> They are one signal among many; firms do not publish how they weigh them, so a candidate without them should show the same skills through projects and interview performance.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_pqt_05_careers_math.py`](../../code/mkt_pqt_05_careers_math.py) prints and asserts every number on this page: the Example 1 bonus pool from a line-item ledger summed in exact decimal arithmetic, the Example 2 posterior by Bayes in fractions and by enumerating equally likely (die, face) outcomes and by a seeded simulation, the gambler's-ruin probability $k/A$ by solving the absorbing-chain linear system and by simulation, and the Example 3 struct sizes and offsets from `ctypes` layouts.
+- Related notes: [Desk Roles and Economics](01-Desk-Roles-and-Economics.md), [Inventory Risk and Skew](04-Inventory-Risk-and-Skew.md).
 
 ## Further reading
 
 - Narang, Rishi K. *Inside the Black Box: A Simple Guide to Quantitative and High-Frequency Trading*. 2nd Edition, Wiley, 2013.
 - Harris, Larry. *Trading and Exchanges: Market Microstructure for Practitioners*. Oxford University Press, 2003.
 - Zhou, Xinfeng. *A Practical Guide to Quantitative Finance Interviews*. CreateSpace, 2008.
-- Crack, Timothy Falcon. *Heard on the Street: Quantitative Questions from Wall Street Job Interviews*. 21st Edition, 2021.
+- Crack, Timothy Falcon. *Heard on the Street: Quantitative Questions from Wall Street Job Interviews*. Self-published, many editions; use the latest.
 - Williams, David. *Probability with Martingales*. Cambridge University Press, 1991.
 - Meyers, Scott. *Effective Modern C++: 42 Specific Ways to Improve Your Use of C++11 and C++14*. O'Reilly Media, 2014.

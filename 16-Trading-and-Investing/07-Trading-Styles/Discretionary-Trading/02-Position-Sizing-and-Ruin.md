@@ -11,18 +11,17 @@ prereqs: []
 
 # Position Sizing, Volatility Targeting, and Risk of Ruin
 
-The single most significant determinant of whether a trader achieves long-term compounding or catastrophic ruin is not their setup selection or entry timing.
-It is their position sizing model.
-A trader with an exceptional predictive edge who bets too large will inevitably suffer mathematical bankruptcy due to variance drag and sequence of returns risk.
-Conversely, a trader with a modest edge who rigorously applies fractional sizing and volatility targeting will survive drawdowns and compound capital systematically.
+Whether a trader with an edge compounds capital or goes broke depends as much on position sizing as on setup selection or entry timing.
+A trader with a genuine edge who bets beyond the zero-growth fraction (about twice the Kelly fraction) sees log wealth drift down, and wealth goes to zero with probability 1 despite the edge.
+A trader with a modest edge who sizes fractionally keeps positive growth and far smaller drawdowns.
 
 ---
 
 ## TL;DR
 
 Position sizing dictates how much capital is committed to an idea based on the distance to the invalidation stop.
-The Kelly Criterion maximizes the expected log-wealth growth rate but induces catastrophic drawdowns when parameters are estimated with error; professional desks deploy Fractional Kelly ($0.25f^*$ to $0.50f^*$).
-Risk of ruin decreases exponentially with the ratio of edge to risk units:
+The Kelly Criterion maximizes the expected log-wealth growth rate, but full Kelly has deep drawdowns (in continuous time it halves wealth at some point with probability 1/2) and overshoots when parameters are estimated with error, so fractional Kelly (for example half Kelly) is the standard remedy (Thorp 2006).
+For fixed-size even-money bets, risk of ruin decreases exponentially with the number of risk units:
 $$R = \left(\frac{1 - A}{1 + A}\right)^{C}$$
 Drawdown recovery requires asymmetric percentage gains: a 50% loss demands a 100% gain just to break even.
 Volatility targeting scales position size inversely to asset volatility, stabilizing portfolio risk across changing regimes.
@@ -50,7 +49,7 @@ Professional market participants utilize three primary position sizing paradigms
    - Fatal flaw: High-volatility small-cap stocks contribute wildly disproportionate risk compared to low-volatility large caps.
 
 2. **Fixed Fractional Risk Sizing**:
-   - Limits the risk of any single trade to a fixed percentage $f$ of current account equity (typically $1.0\%$ to $2.0\%$):
+   - Limits the risk of any single trade to a fixed percentage $f$ of current account equity (for example $1.0\%$):
      $$\text{Dollar Risk} = \text{Equity}_t \times f$$
      $$\text{Position Size } Q = \frac{\text{Equity}_t \times f}{|P_{\text{entry}} - P_{\text{stop}}|}$$
    - Automatically scales position size downward during drawdowns (preserving capital) and upward during winning streaks.
@@ -58,7 +57,7 @@ Professional market participants utilize three primary position sizing paradigms
 3. **Volatility Targeting (Risk Parity at the Trade Level)**:
    - Sizes positions such that each trade contributes an identical daily dollar volatility:
      $$Q_t = \frac{\text{Target Dollar Volatility}}{\text{ATR}_t \times \text{Multiplier}}$$
-   - Prevents calm market positions from being dominated by sudden high-volatility trades.
+   - Prevents a single high-volatility position from dominating the risk of the book.
 
 ### 2. The Kelly Criterion and Growth Curve
 
@@ -83,9 +82,10 @@ $$g(f) = p \ln(1 + b f) + (1 - p) \ln(1 - f)$$
   For a discrete bet the exact crossing must be solved numerically: for Example 1 below ($p = 0.40$, $b = 2.50$, $f^* = 0.16$) it is $f \approx 0.331$, about $2.07 f^*$, so $g(2 f^*) = g(0.32)$ is still slightly positive.
   Beyond the crossing, expected log growth is negative and wealth converges to zero with probability 1 despite the positive edge per trade.
 - **Fractional Kelly**:
-  Because real-world parameters $p$ and $b$ are estimated with error and returns exhibit fat tails, professional funds deploy "Half-Kelly" ($0.50f^*$) or "Quarter-Kelly" ($0.25f^*$).
+  Because real-world parameters $p$ and $b$ are estimated with error and returns exhibit fat tails, the usual remedy is to bet a fraction $c$ of Kelly, such as "Half-Kelly" ($0.50f^*$) or "Quarter-Kelly" ($0.25f^*$).
   In the continuous approximation a bet of $c f^*$ earns $(2c - c^2)$ of the maximum growth rate, so Half-Kelly captures $2(0.5) - 0.5^2 = 75\%$ of it.
-  Return volatility scales with $f$, so Half-Kelly halves volatility, cuts variance to $25\%$ of full Kelly, and drastically reduces peak-to-trough drawdown.
+  Return volatility scales with $f$, so Half-Kelly halves volatility and cuts variance to $25\%$ of full Kelly.
+  Drawdowns shrink much faster: in continuous time (log wealth a Brownian motion with drift), the probability that wealth ever falls to a fraction $x$ of its starting value is $x^{2/c - 1}$, so full Kelly ($c = 1$) halves wealth at some point with probability $50\%$ and Half-Kelly with probability $0.5^3 = 12.5\%$.
 
 ### 3. The Mathematics of Risk of Ruin
 
@@ -112,15 +112,17 @@ The percentage gain required to recover from a drawdown back to the previous equ
 
 $$\text{Recovery Gain } G = \frac{D}{1 - D}$$
 
-| Drawdown ($D$) | Recovery Gain Required ($G$) | Operational Impact |
-|----------------|------------------------------|--------------------|
-| **5.0%** | **5.26%** | Negligible; normal daily fluctuation |
-| **10.0%** | **11.11%** | Manageable within 1-2 standard weeks |
-| **20.0%** | **25.00%** | Requires substantial alpha outperformance |
-| **30.0%** | **42.86%** | Severe psychological stress and risk reduction |
-| **50.0%** | **100.00%** | Must double capital just to break even |
-| **75.0%** | **300.00%** | Catastrophic; account survival virtually impossible |
-| **90.0%** | **900.00%** | Total structural liquidation |
+The last column assumes a hypothetical steady 10% annual return after the drawdown, so recovery takes $\ln(1/(1-D)) / \ln(1.10)$ years.
+
+| Drawdown ($D$) | Recovery Gain Required ($G$) | Years to recover at 10% a year |
+|----------------|------------------------------|--------------------------------|
+| **5.0%** | **5.26%** | 0.54 |
+| **10.0%** | **11.11%** | 1.11 |
+| **20.0%** | **25.00%** | 2.34 |
+| **30.0%** | **42.86%** | 3.74 |
+| **50.0%** | **100.00%** | 7.27 |
+| **75.0%** | **300.00%** | 14.55 |
+| **90.0%** | **900.00%** | 24.16 |
 
 ---
 
@@ -143,7 +145,7 @@ A trader develops a trend-following setup with:
 3. **Evaluate Expected Growth Rate at Half Kelly ($f = 0.08$)**:
    $$g(0.08) = 0.40 \ln(1 + 2.5 \times 0.08) + 0.60 \ln(1 - 0.08)$$
    $$= 0.40 \ln(1.20) + 0.60 \ln(0.92) = 0.40(0.1823) + 0.60(-0.0834) = 0.0729 - 0.0500 = +0.0229\text{ (2.29% per trade)}$$
-   - Half Kelly captures $\frac{2.29\%}{3.00\%} = 76.3\%$ of the maximum theoretical growth rate while reducing exposure and volatility by $50\%$.
+   - Half Kelly captures $\frac{0.022900}{0.029977} = 76.4\%$ of the maximum growth rate (close to the continuous approximation's 75%) while halving exposure and volatility.
 
 4. **Evaluate the Catastrophic Penalty of Over-Betting ($f = 2 f^* = 0.32$)**:
    $$g(0.32) = 0.40 \ln(1 + 2.5 \times 0.32) + 0.60 \ln(1 - 0.32)$$
@@ -163,29 +165,29 @@ The trader enters stock XYZ at $\$150.00$.
 - Stop distance per share: $\$7.00$.
 
 1. **Calculate Share Quantity**:
-   $$Q = \frac{\text{Dollar Risk Budget}}{\text{Stop Distance}} = \frac{\$1,500}{\$7.00} = 214.28 \implies 214\text{ shares}$$
+   $$Q = \frac{\text{Dollar Risk Budget}}{\text{Stop Distance}} = \frac{\$1,500}{\$7.00} = 214.29 \implies 214\text{ shares (rounded down)}$$
 2. **Calculate Total Position Value**:
    $$\text{Position Value} = 214 \times \$150.00 = \$32,100\text{ (32.1% of account equity)}$$
 3. **Verify Dollar Risk on Invalidation**:
    $$\text{Actual Realized Risk} = 214 \times (\$150.00 - \$143.00) = 214 \times \$7.00 = \$1,498.00$$
-   The dollar risk is locked to exactly $\$1,500$ (1.5% of capital) regardless of the stock's volatility.
+   Rounding down keeps the dollar risk at $\$1,498$, within the $\$1,500$ (1.5%) budget, and because the stop is set in ATR units the budget holds whatever the stock's volatility.
 
 ---
 
 ## Pitfalls
 
 - **Confusing Kelly with Maximum Comfort**:
-  Full Kelly strategies regularly suffer peak-to-trough drawdowns exceeding $50\%$ to $70\%$.
-  Almost no human trader or institutional capital allocator can emotionally or legally endure a $50\%$ drawdown without liquidating the manager.
+  In the continuous-time model, full Kelly sees wealth fall to half its starting value at some point with probability $50\%$, and to a tenth with probability $10\%$.
+  Few traders or capital allocators will sit through a $50\%$ drawdown, so the growth-optimal bet is rarely the bet that survives in practice.
 - **Correlation Blindness (Total Portfolio Heat)**:
-  Opening five distinct trades risking $1.5\%$ each in Apple, Microsoft, Nvidia, Google, and Amazon does not represent five independent bets.
-  High cross-asset correlation creates an aggregate systemic portfolio risk of $7.5\%$ on a single tech macro factor.
+  Opening five trades risking $1.5\%$ each in five large technology stocks does not represent five independent bets.
+  If they move together and all hit their stops, the combined loss is $5 \times 1.5\% = 7.5\%$ of equity on one factor.
 - **Static Share Sizing**:
   Trading a static "1,000 shares" on a $\$20$ stock risks $\$500$ on a $\$0.50$ stop, but trading 1,000 shares on a $\$400$ stock with a $\$10$ stop risks $\$10,000$.
   Static share sizing exposes capital to random volatility shocks.
 - **Ignoring Overnight Gap Risk**:
-  A stop-loss order placed at $\$143.00$ does not protect against a disastrous overnight earnings report opening at $\$130.00$.
-  Position sizes must be capped such that a catastrophic $20\%$ overnight gap does not exceed maximum acceptable portfolio loss.
+  A stop-loss order placed at $\$143.00$ does not protect against an overnight earnings report opening at $\$130.00$: the loss is $\$20$ per share instead of $\$7$, or $2.86R$.
+  Cap position size so that a stated worst-case gap (for example $20\%$) stays within the maximum acceptable portfolio loss.
 
 ---
 
@@ -204,9 +206,9 @@ The trader enters stock XYZ at $\$150.00$.
 > For a discrete bet the exact zero crossing sits near but not at 2 * f* (about 0.331 versus 2 * f* = 0.32 for p = 0.40 and b = 2.50).
 > Past the crossing, despite a positive edge per trade, wealth converges to zero with probability 1 because variance drag outweighs the edge.
 
-> [!question]- mkt-trd-036 | Why do quantitative prop desks deploy Fractional Kelly (e.g. Half-Kelly or Quarter-Kelly)?
+> [!question]- mkt-trd-036 | Why might a trader size at Fractional Kelly (e.g. Half-Kelly or Quarter-Kelly) rather than Full Kelly?
 > Real-world win rates and payoff ratios are estimated with statistical uncertainty, and market returns exhibit fat-tailed jump risks.
-> Half-Kelly captures 75% of maximum growth while cutting return volatility by 50% and dramatically reducing catastrophic drawdown risk.
+> In the continuous approximation Half-Kelly keeps 75% of maximum growth while halving return volatility, and it cuts the probability of ever halving wealth from 50% to 12.5%.
 
 > [!question]- mkt-trd-037 | State the classical risk of ruin equation for an account risking a fixed dollar amount on independent even-money bets.
 > Ruin Probability R = ((1 - A) / (1 + A))^C, where A = p - q is the trader's net directional edge and C is the total number of risk units in the account.
@@ -230,7 +232,7 @@ The trader enters stock XYZ at $\$150.00$.
 
 > [!question]- mkt-trd-042 | What is portfolio heat?
 > The total aggregate dollar risk committed across all open positions in an account: Total Heat = Sum(Risk_i) / Equity.
-> Professional desks strictly cap total portfolio heat (typically between 5% and 8% of equity) to prevent multi-asset correlated liquidations.
+> A heat cap is a policy choice, not a market standard; it bounds the loss if correlated positions all hit their stops together (five 1.5% risks are 7.5% of heat).
 
 > [!question]- mkt-trd-043 | Why is variance drag higher for volatile assets than for stable assets?
 > Geometric growth approximates arithmetic mean minus half the variance: R_geo ~ mu - 0.5 * sigma^2.
@@ -242,7 +244,7 @@ The trader enters stock XYZ at $\$150.00$.
 
 > [!question]- mkt-trd-045 | What is Martingale betting and why is it fatal in financial markets?
 > Doubling the position size after every losing trade in an attempt to recover past losses on the first subsequent win.
-> Because market drawdowns exhibit serial clustering, Martingale betting rapidly reaches capital limits, resulting in instantaneous account blowup.
+> Long losing streaks are certain to occur eventually and the stake grows as 2^k: in 1,000 fair even-money bets a run of 10 or more losses happens with probability 38.5%, by which point 1,023 units are lost and the next stake is 1,024 units.
 
 > [!question]- mkt-trd-046 | What is Anti-Martingale sizing?
 > Increasing position size as capital grows and decreasing size as capital shrinks (the foundational principle of fixed fractional and Kelly sizing).
@@ -261,12 +263,12 @@ The trader enters stock XYZ at $\$150.00$.
 > It represents the continuous-time generalization of the Kelly Criterion for risk-averse investors.
 
 > [!question]- mkt-trd-050 | Why does the Kelly Criterion assume logarithmic utility U(W) = ln(W)?
-> Logarithmic utility is the unique utility function that makes the optimal decision in a multi-period game independent of future opportunities.
-> It naturally penalizes zero wealth with negative infinite utility, mathematically preventing voluntary bankruptcy.
+> Kelly does not need a utility assumption: maximizing the long-run growth rate of wealth is the same as maximizing E[ln(W)] per bet, because log wealth is a sum of independent log returns (law of large numbers).
+> Log utility also makes the policy myopic (the same bet each period whatever lies ahead), and ln(0) = -infinity means it never stakes everything on a bet that can lose it all.
 
 > [!question]- mkt-trd-051 | How does fat-tailed (Student-t) kurtosis affect the optimal Kelly fraction?
 > High kurtosis and negative skewness increase the frequency of extreme left-tail losses.
-> To account for fat tails, the optimal fraction must be scaled down substantially below the Gaussian Kelly formula to avoid ruin.
+> A Gaussian approximation then overstates the growth-optimal fraction, so the fraction should come from the full return distribution or be scaled down below the Gaussian value.
 
 > [!question]- mkt-trd-052 | What is a Chande Kroll stop and how does it incorporate volatility?
 > An adaptive trailing stop that calculates the high/low over an N-period window and offsets stops by a multiple of the Average True Range.
@@ -274,7 +276,7 @@ The trader enters stock XYZ at $\$150.00$.
 
 > [!question]- mkt-trd-053 | Explain the concept of asymmetric risk-to-reward calibration.
 > Ensuring that the expected reward on winning trades is a multiple of the initial risk (e.g. 2R or 3R).
-> Asymmetric payoffs allow a trader to maintain robust profitability even with a modest win rate of 35% to 45%.
+> At 2R the break-even win rate before costs is 1/3 (33.3%), so a 35% to 45% win rate is profitable before costs.
 
 > [!question]- mkt-trd-054 | What is a trailing stop and what is its operational trade-off?
 > A dynamic stop-loss that ratchets in the direction of a winning trade as price advances, locking in unrealized gains.
@@ -285,28 +287,28 @@ The trader enters stock XYZ at $\$150.00$.
 > It frees up capital and eliminates ongoing exposure when market momentum fails to confirm the entry thesis.
 
 > [!question]- mkt-trd-056 | What is scaling in (pyramiding) and how should risk be managed during additions?
-> Adding size to an existing position only after it has moved favorably and the stop-loss has been trailed to break-even.
-> Pyramiding expands position size without ever increasing total open account risk beyond the initial 1R allocation.
+> Adding size to an existing position after it has moved favorably.
+> One common discipline is to add only once the stop on the existing size has been trailed far enough that total open risk, including the new unit, stays within the initial 1R allocation.
 
 > [!question]- mkt-trd-057 | Why does scaling into a losing position (averaging down) violate institutional risk rules?
 > Averaging down increases dollar exposure precisely when the market has disproven the entry thesis.
-> It exponentially increases the probability of an absorbing catastrophic drawdown on a single trade.
+> It raises the loss if the thesis keeps failing, concentrating more capital in a single trade the further it goes against you.
 
 > [!question]- mkt-trd-058 | What is the difference between accounting stop and structural stop?
 > An accounting stop is an arbitrary dollar or percentage loss (e.g. "I will risk $500" or "2%").
 > A structural stop is placed at a technical market invalidation level (e.g. below a swing low or support shelf); position size is derived from this distance.
 
 > [!question]- mkt-trd-059 | What is a circuit breaker in exchange trading?
-> A regulatory mechanism that temporarily halts all trading across a market or individual stock following an extreme price drop (e.g. S&P 500 Level 1 halt at 7% decline).
-> It prevents systemic panic cascade liquidations and provides a cooling-off period for order books to replenish.
+> A rule that halts trading after an extreme move; in the US (as of November 2026) the market-wide circuit breakers halt all equity trading for 15 minutes when the S&P 500 falls 7% (Level 1) or 13% (Level 2) from the prior close before 3:25 pm, and for the rest of the day at 20% (Level 3) under NYSE Rule 7.12, with single stocks governed by Limit Up-Limit Down pauses (NYSE Rule 7.11, in this form since 2013).
+> It is intended to interrupt panic cascades and give order books time to refill.
 
 > [!question]- mkt-trd-060 | What is the relationship between the Sharpe Ratio and the optimal Kelly fraction?
 > In continuous time, the optimal Kelly fraction equals the Sharpe ratio divided by volatility: f* = Sharpe / sigma = (mu - r) / sigma^2.
 > Higher Sharpe strategies allow greater capital commitment per unit of risk.
 
 > [!question]- mkt-trd-061 | Why does liquidity constrain position sizing in small-cap equities?
-> Position size must not exceed a small fraction (e.g. 1% to 2%) of Average Daily Volume (ADV).
-> Exceeding volume limits causes severe market impact on entry and makes emergency liquidation during a panic impossible without devastating slippage.
+> Market impact rises with order size relative to Average Daily Volume (ADV), so desks set a participation cap as a policy choice (for example a hypothetical 1% of ADV).
+> A position that is many days of volume cannot be exited in a panic without large slippage.
 
 > [!question]- mkt-trd-062 | What is a hard stop versus a mental stop?
 > A hard stop is a resting stop-loss order placed in the exchange matching engine or broker server.
@@ -317,14 +319,20 @@ The trader enters stock XYZ at $\$150.00$.
 > Diversification reduces portfolio variance without reducing expected return, allowing larger aggregate position sizing under a given risk budget.
 
 > [!question]- mkt-trd-064 | What is the maximum acceptable drawdown threshold for an institutional discretionary trader?
-> Most institutional prop desks enforce a hard drawdown stop between 5% and 10% of allocated capital.
-> Breaching the 10% threshold triggers mandatory position de-risking, desk review, or temporary trading suspension.
+> There is no public industry standard; each firm sets its own limits in the trader's mandate.
+> The design principle is to cut risk well before a drawdown needs an implausible recovery: a 10% drawdown needs an 11.1% gain, a 20% drawdown 25%, a 50% drawdown 100%.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_trd_02_sizing_ruin.py`](../../code/mkt_trd_02_sizing_ruin.py) prints and asserts every number on this page: Kelly fractions by a grid search of the growth curve against the closed form, growth rates by compounding an explicit trade ledger and by seeded simulation within five standard errors, zero crossings by bisection, ruin probabilities by solving the absorbing Markov chain numerically, the Kelly drawdown probabilities by a finite-difference solution of the hitting-probability equation, recovery gains in exact fractions, and the martingale streak probability by dynamic programming checked by simulation.
+- Related notes: [Retail Base Rates and Costs](01-Retail-Base-Rates-and-Costs.md), [Stop Logic and Trade Management](03-Stop-Logic-and-Trade-Management.md), [Probability and Decision Making](06-Probability-and-Decision-Making.md).
 
 ## Further reading
 
 - Kelly, J. L. (1956). *A new interpretation of information rate*. Bell System Technical Journal, 35(4), 917-926.
 - Thorp, E. O. (2006). *The Kelly criterion in blackjack, sports betting, and the stock market*. In Handbook of asset and liability management (pp. 385-428). North-Holland.
+- Merton, R. C. (1969). *Lifetime portfolio selection under uncertainty: The continuous-time case*. The Review of Economics and Statistics, 51(3), 247-257.
 - Vince, R. (1992). *The Mathematics of Money Management: Risk Analysis Techniques for Traders*. John Wiley & Sons.
 - Chande, T. S., & Kroll, S. (1994). *The New Technical Trader: Boost Your Profit by Plugging into the Latest Indicators*. John Wiley & Sons.

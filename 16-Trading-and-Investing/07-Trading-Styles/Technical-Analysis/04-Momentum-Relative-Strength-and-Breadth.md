@@ -11,18 +11,18 @@ prereqs: []
 
 # Cross-Sectional Momentum, Relative Strength, and Market Breadth
 
-While individual asset price patterns are susceptible to market noise, relative performance across securities reveals powerful structural trends in capital allocation.
-First documented empirically in asset pricing by Narasimhan Jegadeesh and Sheridan Titman in their landmark 1993 study, cross-sectional momentum - the tendency for assets that outperformed their peers over the past 3 to 12 months to continue outperforming over the subsequent 3 to 12 months - stands as the single most robust empirical anomaly in quantitative finance.
+While individual asset price patterns are susceptible to market noise, relative performance across securities carries information that has survived decades of testing.
+Cross-sectional momentum - the tendency for stocks that outperformed their peers over the past 3 to 12 months to keep outperforming over the next 3 to 12 months - was documented by Narasimhan Jegadeesh and Sheridan Titman (1993) and has since been replicated across international equities and other asset classes (Fama and French 2012; Asness, Moskowitz, and Pedersen 2013).
 In discretionary technical analysis, this phenomenon is evaluated through Relative Strength (RS) ratio lines and market breadth indicators (Advance-Decline statistics, McClellan Oscillators, and High-Low indices) to diagnose the internal health of broad market trends.
 
 ---
 
 ## TL;DR
 
-Cross-sectional momentum ranks securities across an investment universe by historical performance (typically 12-month return skipping the most recent month to avoid short-term reversal) and allocates capital to top-quintile "winners" while shorting or avoiding bottom-quintile "losers."
-Relative Strength lines ($P_{\text{asset}} / P_{\text{benchmark}}$) and Mansfield Relative Strength quantify whether a stock is outperforming the benchmark index; leading stocks make new highs in RS weeks before breaking out in nominal price.
+Cross-sectional momentum ranks securities across an investment universe by past performance (the common academic version uses the return from month $t-12$ to $t-2$, skipping the most recent month because of short-term reversal) and buys the top group ("winners") while shorting or avoiding the bottom group ("losers").
+Relative Strength lines ($P_{\text{asset}} / P_{\text{benchmark}}$) and Mansfield Relative Strength quantify whether a stock is outperforming the benchmark index; practitioners such as O'Neil look for RS lines making new highs before price does.
 Market breadth measures the participation of individual constituents within a capitalization-weighted index.
-Breadth divergences - where mega-cap indices (e.g. S&P 500, Nasdaq 100) make new record highs driven by a handful of tech giants while the Advance-Decline Line, New Highs-New Lows, and equal-weighted indices deteriorate - serve as institutional early warnings of impending market exhaustion.
+Breadth divergences - where mega-cap indices (e.g. S&P 500, Nasdaq 100) make new record highs driven by a handful of tech giants while the Advance-Decline Line, New Highs-New Lows, and equal-weighted indices deteriorate - are read by breadth analysts as warnings of a narrowing advance; they can persist for months and are not a timing signal.
 
 ---
 
@@ -40,54 +40,55 @@ Breadth divergences - where mega-cap indices (e.g. S&P 500, Nasdaq 100) make new
 
 ### 1. Cross-Sectional Momentum in Empirical Asset Pricing
 
-In their 1993 *Journal of Finance* paper, Jegadeesh and Titman examined the relative performance of US equities sorted into deciles based on returns over the past $J$ months ($J \in \{3, 6, 9, 12\}$) and held for $K$ months ($K \in \{3, 6, 9, 12\}$):
+In their 1993 *Journal of Finance* paper, Jegadeesh and Titman examined the relative performance of US equities sorted into deciles based on returns over the past $J$ months ($J \in \{3, 6, 9, 12\}$) and held for $K$ months ($K \in \{3, 6, 9, 12\}$).
+They report each strategy both with formation and holding periods back to back and with a one-week gap between them.
+The $12-1$ window below is the later convention used for the UMD factor and by Carhart (1997):
 
 1. **Portfolio Construction Protocol ($12-1$ Momentum)**:
    - At month $t$, evaluate the cumulative gross return of each asset $i$ over the 11 months from $t-12$ through $t-2$:
      $$R_i(t-12, t-2) = \prod_{k=2}^{12} (1 + r_{i, t-k}) - 1$$
-   - The most recent month $t-1$ is deliberately skipped ("the 1-month skip") to avoid the well-documented 1-month short-term reversal anomaly driven by bid-ask bounce and liquidity provision (Jegadeesh 1990).
+   - The most recent month $t-1$ is deliberately skipped ("the 1-month skip") because one-month returns tend to reverse (Jegadeesh 1990); bid-ask bounce and liquidity provision are among the proposed explanations.
    - Assets are ranked:
      - Long top decile ($P_1$, "Winners").
      - Short bottom decile ($P_{10}$, "Losers").
 
-2. **Empirical Return Distribution**:
-   - The $12-1$ Momentum portfolio generates average annualized excess returns of $8\%$ to $12\%$ across global equities.
-   - Carhart (1997) added a one-year momentum factor to the Fama-French three-factor model, the origin of the four-factor model and of the UMD (Up Minus Down) factor.
+2. **Empirical Evidence**:
+   - Jegadeesh and Titman (1993) found significant positive returns to buying past 3-to-12-month winners and selling losers over 3-to-12-month holding periods, not explained by systematic risk, with part of the first-year abnormal return dissipating over the following two years.
+   - Carhart (1997) added a one-year momentum factor (PR1YR: the 11-month return lagged one month) to the Fama-French three-factor model, giving the four-factor model; the UMD (Up Minus Down) factor is the standard version of it.
    - Fama and French (2012) found momentum returns in North America, Europe and Asia Pacific, though not Japan, that their market, size and value factors do not explain.
-   - Asness, Moskowitz, and Pedersen (2013) demonstrated in *Value and Momentum Everywhere* that momentum is pervasive across international equities, government bond markets, currencies, and commodity futures.
+   - Asness, Moskowitz, and Pedersen (2013) found value and momentum premia in eight markets and asset classes (US, UK, European and Japanese stocks, equity index futures, government bonds, currencies and commodity futures), with value and momentum negatively correlated within and across asset classes.
 
 ```
 +---------------------------------------------------------------------------------+
 |                         CROSS-SECTIONAL MOMENTUM FORMULATION                    |
 |                                                                                 |
-|  [ Month t-12 ] ------------ Lookback Window (11 Months) ------------> [ t-1 ]  |
-|                                                                        | Skip |
-|                                                                        v  1M  |
+|  [ Month t-12 ] ------ Lookback Window (11 Months) ------> [ t-2 ]     [ t-1 ]  |
+|                                                                         skip    |
+|                                                                          v      |
 |  Sort Stocks by Cumulative Return ---> Long Top 10% / Short Bottom 10% [ t ]    |
 |                                                                                 |
-|  Hold Portfolio for Subsequent 3 to 12 Months ---> Expected Alpha: +8% to +12%  |
+|  Hold Portfolio for Subsequent 3 to 12 Months (Jegadeesh-Titman horizons)       |
 +---------------------------------------------------------------------------------+
 ```
 
 ### 2. Relative Strength Metrics in Discretionary Trading
 
-Discretionary market wizards (e.g. Richard Wyckoff, Stan Weinstein, William O'Neil) systematized relative strength as their primary stock selection criterion:
+Discretionary practitioners (e.g. Richard Wyckoff, Stan Weinstein, William O'Neil) made relative strength a central stock selection criterion:
 
 1. **The Relative Strength Ratio**:
    $$\text{RS Ratio}_t = \frac{P_t^{\text{stock}}}{P_t^{\text{benchmark}}}$$
    - When the RS ratio is rising, the stock is outperforming the benchmark index; when falling, it is underperforming.
-   - **Key Chartist Principle**: During a broad market correction, a stock whose RS line makes a new high while the market index makes lower lows exhibits powerful institutional accumulation.
+   - **Chartist Principle**: during a broad market correction, practitioners read a stock whose RS line makes a new high while the index makes lower lows as being under accumulation; this is an interpretation, not a tested result.
 
 2. **Mansfield Relative Strength (RSM)**:
-   Developed by Stan Weinstein for Stage Analysis, the Mansfield RS normalizes the ratio around a zero baseline using an $N$-week moving average (typically $N = 30$ or $52$ weeks):
+   Named after the Mansfield chart service and used by Stan Weinstein in Stage Analysis (Weinstein 1988), the Mansfield RS normalizes the ratio around a zero baseline using an $N$-week moving average of the ratio ($N$ is a chosen lookback, often $52$ weeks):
    $$\text{RSM}_t = \left(\frac{R_t}{\frac{1}{N} \sum_{i=0}^{N-1} R_{t-i}} - 1\right) \times 100, \quad \text{where } R_t = \frac{P_t^{\text{stock}}}{P_t^{\text{benchmark}}}$$
-   - A stock transitioning from below zero to above zero while breaking out of a multi-month base signals an authentic Weinstein **Stage 2 Breakout**.
+   - Weinstein looks for a stock moving from below zero to above zero as it breaks out of a multi-month base, which he calls a **Stage 2 Breakout**.
 
 3. **William O'Neil's IBD Relative Strength Rating**:
    - A percentile ranking from $1$ to $99$ comparing a stock's performance against all other publicly traded stocks over the trailing 12 months.
-   - Weights the most recent quarter by $40\%$ and prior quarters by $20\%$ each:
-     $$\text{Score} = 0.40 \times R_{Q1} + 0.20 \times R_{Q2} + 0.20 \times R_{Q3} + 0.20 \times R_{Q4}$$
-   - Institutional growth strategies require an RS rating of at least $80$ (top $20\%$ of all stocks).
+   - Investor's Business Daily says the rating weights the most recent quarter more heavily; the exact formula is proprietary, and the "40% / 20% / 20% / 20%" weighting quoted online is a third-party approximation.
+   - O'Neil (*How to Make Money in Stocks*) advises buying stocks with an RS rating of $80$ or higher, the top fifth of the ranking.
 
 ### 3. Market Breadth and Internal Indicators
 
@@ -98,20 +99,22 @@ Market breadth monitors the broad underlying distribution of equities to detect 
    - Cumulative sum of advancing stocks minus declining stocks on an exchange:
      $$\text{AD Line}_t = \text{AD Line}_{t-1} + (\text{Advancing Issues}_t - \text{Declining Issues}_t)$$
    - In a healthy bull market, the A/D line advances alongside market indexes.
-   - **Bearish Breadth Divergence**: If the S&P 500 reaches a new record high while the NYSE A/D line fails to reach a new high and trends downward, market internals are severely decaying.
+   - **Bearish Breadth Divergence**: the S&P 500 reaches a new record high while the NYSE A/D line fails to reach a new high and trends downward, meaning the advance is narrowing.
 
 2. **The McClellan Oscillator and Summation Index**:
-   - Developed by Sherman and Marian McClellan (1969), the oscillator applies exponential moving averages to net advancing issues:
+   - Developed by Sherman and Marian McClellan, the oscillator applies exponential moving averages to net advancing issues:
      $$\text{Net Advances}_t = \text{Advancing Issues}_t - \text{Declining Issues}_t$$
      $$\text{McClellan Oscillator}_t = \text{EMA}_{19}(\text{Net Advances}_t) - \text{EMA}_{39}(\text{Net Advances}_t)$$
-   - The **McClellan Summation Index** is the cumulative sum of daily oscillator values, functioning as a long-term breadth barometer.
-   - **Breadth Thrust**: A violent surge in the McClellan Oscillator from deep negative territory ($< -100$) to extreme positive territory ($> +100$) indicates overwhelming institutional accumulation, historically initiating multi-year secular bull advances (Marty Zweig Breadth Thrust).
+   - The 19-day and 39-day EMAs use smoothing constants $0.10$ and $0.05$, from $\alpha = 2 / (N + 1)$, the EMA whose mean lag matches an $N$-day SMA.
+   - The **McClellan Summation Index** is the cumulative sum of daily oscillator values, used as a longer-term breadth gauge.
+   - **Zweig Breadth Thrust** (Zweig 1986, *Winning on Wall Street*): the 10-day average of advances / (advances + declines) rises from below $40\%$ to above $61.5\%$ within 10 trading days.
+   - Zweig presented it as a rare bullish signal; with so few signals in history, its record is anecdotal, and no peer-reviewed test is cited here.
 
 3. **New 52-Week Highs minus New Lows (NH - NL)**:
    - Measures extreme performance across the market:
      $$\text{Net New Highs}_t = \text{New 52w Highs}_t - \text{New 52w Lows}_t$$
-   - A healthy bull market maintains positive net new highs ($> +100$ daily).
-   - If market indexes rally while New 52-Week Lows expand above $100$, an internal bear market is underway beneath the surface.
+   - Breadth analysts read persistently positive net new highs as broad participation.
+   - If indexes rally while new 52-week lows expand, they read it as a narrowing, divergent market; the threshold that counts as "expanding" is a parameter, not a known constant.
 
 ### 4. Empirical Evidence Ledger
 
@@ -120,31 +123,31 @@ Market breadth monitors the broad underlying distribution of equities to detect 
 |                       EVIDENCE LEDGER: MOMENTUM & BREADTH                       |
 +---------------------------------------------------------------------------------+
 |  Phenomenon: Cross-Sectional Momentum & Market Breadth Divergence               |
-|  Evidence Grade: STRONG (Premier Academic Anomaly)                              |
+|  Evidence Grade: STRONG for momentum, WEAK/UNTESTED for breadth timing          |
 +---------------------------------------------------------------------------------+
 |  Key Empirical Studies:                                                         |
 |  1. Jegadeesh and Titman (1993, Journal of Finance):                            |
-|     - Established 3-12 month momentum producing ~1% monthly excess returns.     |
-|     - Verified robust across size, beta, and industry subsamples.               |
+|     - Buying 3-12 month winners and selling losers earns significant returns    |
+|       over 3-12 month holds, not explained by systematic risk.                  |
 |  2. Asness, Moskowitz, and Pedersen (2013, Journal of Finance):                 |
-|     - "Value and Momentum Everywhere" confirmed momentum across 8 markets.     |
-|     - Negative correlation between value and momentum yields massive multi-style|
-|       diversification benefits.                                                 |
+|     - "Value and Momentum Everywhere": premia in 8 markets and asset classes.   |
+|     - Value and momentum are negatively correlated, so a combination            |
+|       diversifies.                                                              |
 |  3. Daniel and Moskowitz (2016, Journal of Financial Economics):                |
 |     - "Momentum Crashes": isolated the structural left-tail risk of momentum.   |
-|     - Following major market panics, past losers violently rebound while past   |
-|       winners lag, triggering severe short squeezes in unhedged momentum.       |
+|     - Crashes come in panic states, after market declines and with high         |
+|       volatility, as the market rebounds and past losers rally.                 |
 |  4. Barroso and Santa-Clara (2015, Journal of Financial Economics):             |
-|     - "Momentum Has Its Moments": volatility-scaled momentum largely removes    |
-|       crash risk and nearly doubles the Sharpe ratio, from 0.53 to 0.97.        |
+|     - "Momentum Has Its Moments": scaling momentum to constant risk virtually   |
+|       eliminates crashes and nearly doubles the Sharpe ratio.                   |
 +---------------------------------------------------------------------------------+
 |  Counter-Evidence & Failure Modes:                                              |
 |  1. High Turnover and Execution Drag:                                           |
 |     - Lesmond, Schill, and Zhou (2004) argued momentum returns are concentrated |
 |       in illiquid, high-cost small stocks where transaction costs erase alpha.  |
 |  2. Factor Crowding and Liquidity Shocks:                                       |
-|     - Momentum exhibits sharp deleveraging drawdowns during quantitative factor |
-|       unwinds (e.g. Quant Meltdown of August 2007).                             |
+|     - Quant equity long-short strategies suffered sharp losses in the August    |
+|       2007 unwind (Khandani and Lo 2011, Journal of Financial Markets).         |
 +---------------------------------------------------------------------------------+
 ```
 
@@ -154,31 +157,30 @@ Market breadth monitors the broad underlying distribution of equities to detect 
 
 ### Example 1: Calculating Cross-Sectional Momentum Return and Ranking
 
-A quantitative equity researcher evaluates three stocks in a universe at month $t$:
-- Stock A (Tech): Cumulative Return $t-12$ to $t-1 = +45.0\%$.
-- Stock B (Consumer): Cumulative Return $t-12$ to $t-1 = +12.0\%$.
-- Stock C (Energy): Cumulative Return $t-12$ to $t-1 = -28.0\%$.
+A quantitative equity researcher illustrates the ranking with three hypothetical stocks at month $t$:
+- Stock A (Tech): Cumulative Return $t-12$ to $t-2 = +45.0\%$.
+- Stock B (Consumer): Cumulative Return $t-12$ to $t-2 = +12.0\%$.
+- Stock C (Energy): Cumulative Return $t-12$ to $t-2 = -28.0\%$.
 - Benchmark Index: Cumulative Return $= +10.0\%$.
 
-1. **Rank Stocks into Decile Buckets**:
-   - Winner ($P_1$): Stock A ($+45.0\%$).
-   - Neutral ($P_5$): Stock B ($+12.0\%$).
-   - Loser ($P_{10}$): Stock C ($-28.0\%$).
+1. **Rank Stocks**:
+   - In a real universe these would fall into deciles; here A stands for the winner decile ($P_1$), B for the middle, and C for the loser decile ($P_{10}$).
 
 2. **Construct Long-Short Zero-Cost Momentum Portfolio**:
    - Long $\$1,000,000$ in Stock A.
    - Short $\$1,000,000$ in Stock C.
 
-3. **Evaluate Performance Over Subsequent 6 Months**:
+3. **Evaluate Performance Over Subsequent 6 Months (hypothetical)**:
    - Stock A gains $+18.0\%$ ($+\$180,000$).
    - Stock C loses $-8.0\%$ (Short position gains $+\$80,000$).
-   - **Net Portfolio Spread Alpha**:
-     $$\text{Gross Return} = +\$180,000 + \$80,000 = +\$260,000\text{ on } \$1,000,000\text{ capital} = +26.0\%$$
-   - The momentum factor generated $+26.0\%$ excess spread independent of market direction.
+   - **Net Portfolio Spread**:
+     $$\text{Gross P\&L} = +\$180,000 + \$80,000 = +\$260,000$$
+   - Per dollar long and dollar short that is a spread return of $18.0\% - (-8.0\%) = 26.0\%$ before costs and borrow fees.
+   - The spread is market-neutral only if the two legs have equal beta; a high-beta winner leg adds market exposure.
 
 ### Example 2: Diagnosing Bearish Market Breadth Divergence
 
-A chief investment officer assesses market internals during a quarterly S&P 500 advance:
+A chief investment officer assesses market internals during a quarterly S&P 500 advance (hypothetical figures):
 - **Month 1**:
   - S&P 500 Index Close: $4,800.00$.
   - NYSE Daily Advancing Issues: $2,200$, Declining Issues: $800$ (Net: $+1,400$).
@@ -192,14 +194,14 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
   - Stocks Above 200-Day SMA: $38.0\%$ (Majority of stocks in downtrends).
 
 1. **Internal Health Evaluation**:
-   - While the capitalization-weighted index rallied by $+6.25\%$, the majority of underlying stocks declined.
+   - While the capitalization-weighted index rallied by $+6.25\%$, the cumulative A/D line fell by $3,500$, so declines outnumbered advances over the quarter.
    - Net New Highs flipped negative ($-75$).
    - Only $38\%$ of equities trade above their long-term 200-day moving average.
 
 2. **Synthesis and Strategic Action**:
    - **Diagnosis**: Severe Bearish Breadth Divergence (Narrow Leadership).
-   - Capital is concentrating exclusively in top mega-cap constituents while the broad market experiences systemic distribution.
-   - The portfolio desk tightens stop losses, reduces gross long exposure, and buys index put options ahead of the inevitable distribution resolution.
+   - The advance is concentrated in the largest constituents while most stocks weaken.
+   - A desk that acts on it might tighten stops or hedge; breadth divergences can persist for months, so the reading is about risk, not a dated forecast.
 
 ---
 
@@ -207,15 +209,15 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 - **The Momentum Crash Hazard**:
   Momentum portfolios short the biggest historical losers.
-  Following a violent bear market bottom, high-beta, beaten-down losers rebound parabolically, inflicting catastrophic short squeeze drawdowns on momentum strategies.
-  Desks must volatility-scale the portfolio or avoid naked short legs during market panics.
+  Daniel and Moskowitz (2016) show crashes occur in panic states, after market declines and with high volatility, when beaten-down losers rebound with the market.
+  Volatility scaling (Barroso and Santa-Clara 2015) or dynamic weighting (Daniel and Moskowitz 2016) reduces that exposure.
 - **Confusing High Beta with True Relative Strength**:
   In a roaring bull market, a volatile $2.0$ beta penny stock will naturally outgain a $1.0$ beta index.
   This is cyclical market sensitivity, not genuine alpha.
   True relative strength outgains the market on advancing days and holds firm or rallies during market down days.
 - **Ignoring Sector Concentration in Relative Strength**:
-  Sorting stocks purely by momentum frequently concentrates the entire long portfolio in a single trending industry (e.g. Energy in 2022, AI Semiconductors in 2023).
-  Unconstrained momentum portfolios inadvertently take on enormous sector risk.
+  Sorting stocks purely by momentum can concentrate the long portfolio in a single trending industry.
+  Moskowitz and Grinblatt (1999) found that industry momentum accounts for much of individual-stock momentum, so unconstrained portfolios carry large industry bets.
 - **Relying on Breadth Timing for Exact Daily Turns**:
   Breadth divergences can persist for months before the capitalization-weighted index finally succumbs.
   Prematurely shorting a market with narrow breadth before price breaks structural support results in heavy carry losses.
@@ -230,35 +232,35 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 > [!question]- mkt-ta-098 | Why do quantitative researchers skip the most recent month (t-1) when constructing 12-month momentum portfolios?
 > To avoid contamination from the 1-month short-term reversal anomaly.
-> The 1-month reversal is driven by market microstructure friction, bid-ask bounce, and temporary liquidity shocks rather than true fundamental momentum.
+> One-month returns tend to reverse (Jegadeesh 1990), an effect commonly attributed to bid-ask bounce and temporary liquidity shocks rather than to information.
 
 > [!question]- mkt-ta-099 | What was the key finding of Asness, Moskowitz, and Pedersen (2013) in "Value and Momentum Everywhere"?
-> Momentum is a universal empirical phenomenon present across 8 diverse asset classes and global geographies.
-> Because value and momentum are negatively correlated, combining them creates massive Sharpe ratio diversification benefits.
+> Value and momentum premia appear in all eight markets and asset classes they study, with a strong common factor structure.
+> Value and momentum are negatively correlated within and across asset classes, and in their sample a value-momentum combination had a higher Sharpe ratio than either alone.
 
 > [!question]- mkt-ta-100 | What is a momentum crash and under what market conditions does it occur?
 > A violent, multi-month drawdown in a long-short momentum portfolio where shorted "losers" rally explosively while long "winners" lag.
-> Documented by Daniel and Moskowitz (2016), momentum crashes occur at the transition from panic bear market lows into sharp relief recoveries.
+> Daniel and Moskowitz (2016) show they occur in panic states, following market declines and when volatility is high, contemporaneous with market rebounds.
 
-> [!question]- mkt-ta-101 | How did Barroso and Santa-Clara (2015) eliminate momentum crash risk?
-> By dynamically scaling portfolio exposure inversely to rolling realized momentum volatility (volatility targeting).
-> Volatility-scaled momentum nearly doubled the annualized Sharpe ratio and removed left-tail crash drawdowns.
+> [!question]- mkt-ta-101 | How did Barroso and Santa-Clara (2015) reduce momentum crash risk?
+> By scaling exposure inversely to the momentum portfolio's recent realized volatility, targeting constant risk.
+> They report that this virtually eliminates crashes and nearly doubles the Sharpe ratio of the momentum strategy.
 
 > [!question]- mkt-ta-102 | What is a Relative Strength (RS) ratio line?
 > A plot of the ratio of an individual stock's price divided by a benchmark index price: RS = P_stock / P_benchmark.
 > A rising slope indicates outperformance; a falling slope indicates underperformance.
 
 > [!question]- mkt-ta-103 | What is Mansfield Relative Strength (RSM)?
-> A normalized relative strength indicator developed by Stan Weinstein that calculates the percentage deviation of the RS ratio from its 30-week moving average.
-> A transition above zero confirms a Stage 2 breakout.
+> A normalized relative strength indicator, named after the Mansfield chart service and used by Stan Weinstein, that measures the percentage deviation of the RS ratio from its own N-week moving average (52 weeks is a common choice).
+> Weinstein looks for a move above zero alongside a Stage 2 breakout.
 
 > [!question]- mkt-ta-104 | In Weinstein Stage Analysis, what are the four stages of a market cycle?
 > Stage 1: Basing (Accumulation), Stage 2: Advancing (Uptrend/Markup), Stage 3: Top Area (Distribution), Stage 4: Declining (Downtrend/Markdown).
-> Institutional traders restrict long entries exclusively to early Stage 2 breakouts.
+> Weinstein (1988) advises buying in early Stage 2 and avoiding Stage 4.
 
 > [!question]- mkt-ta-105 | What is William O'Neil's IBD Relative Strength rating?
-> A percentile score from 1 to 99 ranking a stock's 12-month performance against all other stocks, weighting the most recent quarter by 40%.
-> Leading growth stocks entering sustained advances typically display an RS rating of 80 or higher.
+> A percentile score from 1 to 99 ranking a stock's 12-month performance against all other stocks, with the most recent quarter weighted more heavily (the exact formula is proprietary).
+> O'Neil advises buying only stocks rated 80 or higher.
 
 > [!question]- mkt-ta-106 | What is the Cumulative Advance-Decline (A/D) Line?
 > A running cumulative sum of daily advancing stocks minus daily declining stocks on an exchange: AD_t = AD_{t-1} + (Advancing - Declining).
@@ -266,97 +268,115 @@ A chief investment officer assesses market internals during a quarterly S&P 500 
 
 > [!question]- mkt-ta-107 | What is a bearish market breadth divergence?
 > A condition where major capitalization-weighted indexes (e.g. S&P 500) reach new record highs while breadth indicators (A/D line, Net New Highs) decline.
-> It reveals that the rally is being driven by a narrowing band of mega-caps while the majority of equities are deteriorating.
+> It shows that fewer stocks are carrying the index higher; chartists read the divergence as a warning, but no peer-reviewed test of it as a timing signal is cited here.
 
 > [!question]- mkt-ta-108 | What is the McClellan Oscillator?
-> The difference between the 19-day EMA and the 39-day EMA of net advancing issues on an exchange.
+> The difference between the 19-day EMA and the 39-day EMA of net advancing issues on an exchange (smoothing constants 0.10 and 0.05).
 > It quantifies short-term to intermediate-term momentum in market breadth.
 
 > [!question]- mkt-ta-109 | What is a Zweig Breadth Thrust?
-> A rare, powerful market breadth signal where the 10-day moving average of advancing stocks divided by total issues surges from below 40% to above 61.5% within 10 trading sessions.
-> Developed by Marty Zweig, it reliably signals the launch of major secular bull markets.
+> Marty Zweig's (1986) signal: the 10-day average of advances / (advances + declines) rises from below 40% to above 61.5% within 10 trading days.
+> Zweig presented it as a rare bullish signal; with few signals in history its record is anecdotal, and no peer-reviewed test is cited here.
 
 > [!question]- mkt-ta-110 | What is the New Highs - New Lows (NH-NL) Index?
 > The daily count of stocks reaching new 52-week highs minus those reaching new 52-week lows.
-> Expanding new highs confirms broad market strength; expanding new lows in a rising market warns of impending distribution.
+> Chartists read expanding new highs as broad participation and expanding new lows in a rising market as a warning of distribution; no peer-reviewed test of these readings is cited here.
 
 > [!question]- mkt-ta-111 | Why does an equal-weighted index (e.g. RSP) outperforming a cap-weighted index (e.g. SPY) signal healthy breadth?
-> An equal-weighted index weights every constituent equally (0.2%), meaning its advance reflects broad-based buying across mid and small constituents rather than mega-cap distortion.
+> An equal-weighted index gives every constituent the same weight at each rebalance (1/500 = 0.2% in a 500-stock index), so its return reflects the average stock rather than the largest ones.
+> Equal-weight beating cap-weight means the average constituent is outperforming the mega-caps, a sign of broader participation.
 
 > [!question]- mkt-ta-112 | What is the percentage of stocks trading above their 200-day moving average indicator?
-> A structural breadth gauge measuring what percentage of an index's components are in secular uptrends.
-> Extreme readings below 15% signal washed-out capitulation, while divergences below 50% during index highs indicate severe internal decay.
+> A breadth gauge measuring what percentage of an index's components trade above their own 200-day moving average, a common proxy for a long-term uptrend (not a secular, multi-cycle trend).
+> Very low readings are read as washed-out conditions and a falling reading during index highs as narrowing participation; the cut-offs are parameters to test, not known constants.
 
 > [!question]- mkt-ta-113 | What is behavioral under-reaction and how does it explain the momentum anomaly?
-> Investors and equity analysts systematically under-react to new fundamental information (e.g. earnings surprises) due to conservatism and anchoring bias.
-> Prices adjust gradually to fair value over several months, creating trending momentum.
+> One explanation (Barberis, Shleifer, and Vishny 1998; Hong and Stein 1999): investors under-react to new information because of conservatism or slow information diffusion.
+> Prices then adjust gradually over several months, producing momentum; risk-based explanations compete with this view.
 
 > [!question]- mkt-ta-114 | What is the disposition effect and how does it sustain price momentum?
 > The behavioral tendency of investors to sell winning stocks prematurely to lock in gains and hold losing stocks to avoid admitting losses.
-> Excess selling on winners creates temporary resistance, slowing the advance and prolonging subsequent momentum continuation.
+> Grinblatt and Han (2005, Journal of Financial Economics) model how this selling pressure keeps winners below fundamental value, so prices underreact and momentum follows.
 
 > [!question]- mkt-ta-115 | How does factor crowding impact quantitative momentum funds?
 > When many funds simultaneously pile into identical top-momentum names, positions become illiquid.
-> An unexpected shock forces simultaneous liquidations, triggering sudden cascading momentum drawdowns.
+> An unexpected shock can force simultaneous liquidations, which can deepen a momentum drawdown as funds sell the same names.
 
 > [!question]- mkt-ta-116 | What is residual momentum?
-> Momentum computed from idiosyncratic returns after regressing stock returns against the Fama-French 3-factor or 5-factor model.
-> Residual momentum eliminates industry and factor bias, producing higher Sharpe ratios and lower crash risk than raw momentum.
+> Momentum computed from residual returns after regressing stock returns on the Fama-French three factors.
+> Blitz, Huij, and Martens (2011, Journal of Empirical Finance) found it has much less time-varying factor exposure than total-return momentum and earned higher risk-adjusted profits in their sample.
 
 > [!question]- mkt-ta-117 | How does the Arms Index (TRIN) measure market internals?
 > TRIN = (Advancing Issues / Declining Issues) / (Advancing Volume / Declining Volume).
-> A TRIN below 1.0 indicates strong buying pressure (volume disproportionately in advancing stocks); TRIN above 1.0 indicates selling pressure.
+> A TRIN below 1.0 means volume per advancing issue exceeds volume per declining issue, which practitioners read as buying pressure; above 1.0 is read as selling pressure.
 
 > [!question]- mkt-ta-118 | What is a TRIN capitulation signal?
-> An extreme spike in the intraday Arms Index (e.g. TRIN > 3.0 or 4.0) accompanied by heavy downside volume.
-> It indicates indiscriminate panic selling and often marks short-term exhaustion bottoms.
+> An extreme spike in the Arms Index accompanied by heavy downside volume.
+> Practitioners read it as indiscriminate selling and a possible short-term low; the spike level used is a parameter, and no peer-reviewed test is cited here.
 
 > [!question]- mkt-ta-119 | What is sector rotation in equity markets?
 > The systematic movement of institutional capital from one industry sector to another according to the stages of the macroeconomic business cycle.
-> Relative strength analysis tracks the migration from early-cycle cyclical tech/consumer names to late-cycle defensive utilities/staples.
+> Relative strength analysis is used to see which sectors are leading; the textbook business-cycle sequence of sector leadership is a stylized model, not a reliable timetable.
 
 > [!question]- mkt-ta-120 | What is the High-Low Logic Index?
-> The lesser of the percentage of new 52-week highs and new 52-week lows on a given day.
-> A high reading indicates market divergence and confusion where both new highs and new lows are elevated simultaneously.
+> Norman Fosback's indicator: the lesser of new 52-week highs and new 52-week lows, each as a percentage of issues traded, on a given day.
+> A high reading means both new highs and new lows are elevated at once, a divided market.
 
 > [!question]- mkt-ta-121 | Why is Relative Strength a leading indicator at market cycle bottoms?
-> Institutional accumulation begins in market leaders while the broad index is still printing final panic lows.
-> Stocks that refuse to break support during the final index selloff become the primary leaders of the subsequent bull market.
+> The practitioner view (O'Neil, Weinstein): stocks that hold up during the final index selloff often lead the next advance.
+> That is an observation from practitioner books, not a tested result; momentum crashes (Daniel and Moskowitz 2016) show past losers often lead the first rebound instead.
 
-> [!question]- mkt-ta-122 | What is intermediate-term momentum reversal (mean reversion)?
-> The tendency for momentum to reverse after 3 to 5 years, where past long-term winners become overvalued and underperform, reverting toward historical fundamental means.
-> Documented by De Bondt and Thaler (1985).
+> [!question]- mkt-ta-122 | What is long-term reversal, and who documented it?
+> The tendency for multi-year winners to underperform multi-year losers over the following years.
+> De Bondt and Thaler (1985) found that portfolios of prior 36-month losers outperformed prior 36-month winners over the next 36 months, which they attributed to overreaction.
 
 > [!question]- mkt-ta-123 | What is post-earnings announcement drift (PEAD) and how does it relate to momentum?
-> The empirical finding that stocks announcing positive earnings surprises continue to drift higher for up to 60 days following the announcement.
-> PEAD serves as one of the primary micro-drivers underlying medium-term price momentum.
+> The finding that stocks with positive earnings surprises keep drifting up (and negative ones down) after the announcement; Bernard and Thomas (1989) measured it over the 60 trading days that follow.
+> Chan, Jegadeesh, and Lakonishok (1996) found that price momentum and earnings momentum each predict returns and are only partly the same effect.
 
 > [!question]- mkt-ta-124 | How does liquidity affect momentum strategy profitability?
-> Momentum is strongest among small-cap and illiquid stocks, but high bid-ask spreads and market impact can consume the theoretical alpha.
+> Lesmond, Schill, and Zhou (2004) argued momentum profits concentrate in high-cost stocks, where trading costs can consume them.
 > Institutional momentum strategies enforce market capitalization and daily volume filters.
 
 > [!question]- mkt-ta-125 | What is cross-sectional vs time-series momentum?
 > Cross-sectional momentum ranks assets against each other (relative winners vs losers, zero-net-investment).
-> Time-series momentum evaluates an asset's return against its own past return (absolute trend: long positive trend, short negative trend).
+> Time-series momentum evaluates an asset's return against its own past return (absolute trend: long positive trend, short negative trend); Moskowitz, Ooi, and Pedersen (2012) documented it in 58 futures and forward contracts.
 
 > [!question]- mkt-ta-126 | What is the Up/Down Volume Ratio?
 > The ratio of volume traded in advancing stocks divided by volume traded in declining stocks over a specified period (e.g. 50 days).
-> An Up/Down volume ratio above 1.2 to 1.5 indicates institutional accumulation.
+> Practitioners read a ratio persistently above 1 as accumulation; any specific cut-off is a parameter to test.
 
 > [!question]- mkt-ta-127 | What is a "breadth thrust" exhaustion signal?
-> When market breadth indicators reach extreme overbought levels (> 90% stocks above 50 DMA) and then abruptly roll over.
-> It indicates that buying power has been fully exhausted across the entire universe.
+> When a breadth indicator such as the share of stocks above their 50-day average reaches an extreme high and then rolls over.
+> Breadth analysts read it as exhausted buying; the extreme level is a parameter, and no peer-reviewed test is cited here.
 
 > [!question]- mkt-ta-128 | Why do quantitative asset allocators combine Value and Momentum factors?
 > Value buys cheap, beaten-down assets with negative momentum, while Momentum buys expensive, high-performing assets with positive trend.
-> Because their return streams have an empirical correlation of -0.4 to -0.6, blending them significantly smooths equity curves.
+> Asness, Moskowitz, and Pedersen (2013) found their returns negatively correlated within and across asset classes, so a blend has lower volatility than either alone.
 
 ---
+
+## In this repo and The-Distinguished-Engineer
+
+- Code: [`../../code/mkt_ta_04_momentum_breadth.py`](../../code/mkt_ta_04_momentum_breadth.py) prints and asserts every number on this page: the 12-1 window by enumerating month offsets (with the compounded return checked against a log-return sum on a seeded series), the long-short example by marking explicit share positions on each leg, the breadth arithmetic in exact rational numbers, and the McClellan smoothing constants by matching the EMA's explicit-weight mean lag and its measured delay on a ramp to the SMA lag; Zweig's thresholds are cited constants.
+- Related notes: [Time-Series Momentum and Trend Following](07-Time-Series-Momentum-and-Trend-Following.md), [Dow Theory and Trend Evidence](01-Dow-Theory-and-Trend-Evidence.md).
 
 ## Further reading
 
 - De Bondt, W. F., & Thaler, R. (1985). *Does the stock market overreact?* The Journal of Finance, 40(3), 793-805.
-- McClellan, S., & McClellan, M. (1969). *Patterns for Profit: The McClellan Oscillator and Summation Index*. Trade Signals Inc.
+- Jegadeesh, N. (1990). *Evidence of predictable behavior of security returns*. The Journal of Finance, 45(3), 881-898.
+- Bernard, V. L., & Thomas, J. K. (1989). *Post-earnings-announcement drift: Delayed price response or risk premium?* Journal of Accounting Research, 27(Supplement), 1-36.
+- Chan, L. K. C., Jegadeesh, N., & Lakonishok, J. (1996). *Momentum strategies*. The Journal of Finance, 51(5), 1681-1713.
+- Moskowitz, T. J., & Grinblatt, M. (1999). *Do industries explain momentum?* The Journal of Finance, 54(4), 1249-1290.
+- Barberis, N., Shleifer, A., & Vishny, R. (1998). *A model of investor sentiment*. Journal of Financial Economics, 49(3), 307-343.
+- Hong, H., & Stein, J. C. (1999). *A unified theory of underreaction, momentum trading, and overreaction in asset markets*. The Journal of Finance, 54(6), 2143-2184.
+- Grinblatt, M., & Han, B. (2005). *Prospect theory, mental accounting, and momentum*. Journal of Financial Economics, 78(2), 311-339.
+- Lesmond, D. A., Schill, M. J., & Zhou, C. (2004). *The illusory nature of momentum profits*. Journal of Financial Economics, 71(2), 349-380.
+- Blitz, D., Huij, J., & Martens, M. (2011). *Residual momentum*. Journal of Empirical Finance, 18(3), 506-521.
+- Khandani, A. E., & Lo, A. W. (2011). *What happened to the quants in August 2007? Evidence from factors and transactions data*. Journal of Financial Markets, 14(1), 1-46.
+- Moskowitz, T. J., Ooi, Y. H., & Pedersen, L. H. (2012). *Time series momentum*. Journal of Financial Economics, 104(2), 228-250.
+- Weinstein, S. (1988). *Stan Weinstein's Secrets for Profiting in Bull and Bear Markets*. Dow Jones-Irwin.
+- Zweig, M. (1986). *Winning on Wall Street*. Warner Books.
 - Jegadeesh, N., & Titman, S. (1993). *Returns to buying winners and selling losers: Implications for stock market efficiency*. The Journal of Finance, 48(1), 65-91.
 - Carhart, M. M. (1997). *On persistence in mutual fund performance*. The Journal of Finance, 52(1), 57-82.
 - Fama, E. F., & French, K. R. (2012). *Size, value, and momentum in international stock returns*. Journal of Financial Economics, 105(3), 457-472.
